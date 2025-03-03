@@ -1,0 +1,46 @@
+* {
+  box-sizing: border-box;
+}
+
+
+$primary-color: #fa541c;
+$active-color: rgba(#fa541c, 0.5);
+
+
+$bg-color-1: #f5f5f5;
+$bg-color-2: #e1e1e1;
+$bg-color-3: #ecfbf4;
+
+$font-size-1: 17px;
+$font-size-2: 16px;
+$font-size-3: 15px;
+$font-size-4: 14px;
+$font-size-5: 13px;
+$font-size-6: 12px;
+$font-size-7: 11px;
+$font-size-8: 10px;
+
+$sidebar-shadow: 1px 1px 16px #{rgba(#1D2329,0.15)};
+$box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+$box-shadow-2: 0 0 3px rgba(0, 0, 0, 0.05);
+
+
+$text-color: #262626;
+$text-color-sub: #889191;
+$sub-text-color: rgba(0, 0, 0, 0.65);
+$sm-color: rgba(0, 0, 0, 0.75);
+
+$border-color: #f1f1f1;
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+@mixin wrap {
+  word-wrap: break-word;
+  word-spacing: normal;
+  word-break: break-all;
+}
