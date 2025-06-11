@@ -191,13 +191,11 @@ export function readDirs(Dir) {
     /*
     * 排除目录
     * */
-    temp.forEach(function (item) {
-        if (item.isFile()) {
-            destination.push({
-                filepath: item.getAbsolutePath(),
-                datetime: item.lastModified()
-            });
-        }
+    temp.forEach(function (item, index) {
+        destination.push({
+            index: index,
+            datetime: item.lastModified()
+        });
     })
 
     /*
@@ -211,7 +209,9 @@ export function readDirs(Dir) {
         return false;
     }
 
+    destination[0].filepath = temp[destination[0].index].getAbsolutePath();
     destination[0].number = destination.length; //记录文件数量
+
     return destination[0]; //返回最新的文件
 
 }
