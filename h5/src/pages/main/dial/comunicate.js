@@ -5,7 +5,7 @@
 * */
 
 import load from "@/common/usual/load";
-import {getState} from "@/common/html5plus/monitor";
+import {getState, handle} from "@/common/html5plus/monitor";
 import readRecord from "@/common/html5plus/read-record";
 import dayjs from "dayjs";
 import {sleep} from "@/common/usual/common";
@@ -58,7 +58,6 @@ export default function (loadData) {
     /*
     * 拨打电话
     * */
-
     let dialing = false; //正在拨号
 
     const dial = async (user) => {
@@ -80,7 +79,6 @@ export default function (loadData) {
 
         const book = await getBook(); //获取通讯录
 
-        console.log(book)
 
         /* 追加到通讯录 */
         if (book) {
@@ -110,7 +108,7 @@ export default function (loadData) {
                 }
 
                 /* 通话结束 */
-                if (getState() != 0) {
+                if (getState() !== 0) {
                     break;
                 } else {
                     count++;
@@ -121,8 +119,9 @@ export default function (loadData) {
 
             /* eslint-disable-next-line */
             while (true) {
+
                 /* 通话结束 */
-                if (getState() == 0) {
+                if (getState() === 0) {
 
                     let record = await readRecord({
                         callTime: start.valueOf()
@@ -132,7 +131,7 @@ export default function (loadData) {
                     /* 如果读取失败 */
                     let error = 0;
 
-                    while (record.length == 0) {
+                    while (record.length === 0) {
 
                         await sleep(200); //休眠
 
@@ -159,8 +158,14 @@ export default function (loadData) {
                          * 判断请求结果
                          * */
                         if (res.data.code) {
+
                             showNotify("本次通话记录已自动上传..."); //弹出提醒
+
+                            /* 开始上次本次通话产生的录音文件 */
+                            handle(start, res.data.data)
+
                             loadData(); //刷新数据
+
                         } else {
                             /* 弹出错误原因 */
                             load.error(res.data.errMsg);

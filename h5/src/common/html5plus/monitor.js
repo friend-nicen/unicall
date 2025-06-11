@@ -107,6 +107,7 @@ export function getRecordPath() {
 
     let path = "";
 
+    log_time("机型：" + type);
 
     switch (type) {
         case "xiaomi":
@@ -122,19 +123,42 @@ export function getRecordPath() {
             path = "/Sounds/CallRecord/";
             break;
         case "meizu":
-            path = "/Recorder";
+            path = "/Recorder/";
             break;
         case "oppo":
-            path = "/Music/Recordings/Call Recordings";
+            path = "/Music/Recordings/Call Recordings/";
             break;
         case "vivo":
-            path = "/Record/Call";
+            path = "/Record/Call/";
             break;
         case "samsung":
-            path = "/Sounds";
+            path = "/Sounds/";
+            break;
+        case "oneplus": //一加手机
+            path = "/Music/Recordings/Call Recordings/";
+            break;
+        case "redmi": //红米手机
+            path = '/MIUI/sound_recorder/call_rec/';
+            break;
+        case "sony": //索尼手机
+            path = "/Music/PCMRecordings/";
+            break;
+        case "google": //谷歌Pixel手机
+            path = "/VoiceRecorder/";
+            break;
+        case "asus": //华硕手机
+            path = "/Recorder/Recordings/";
+            break;
+        case "lg": //LG手机
+            path = "/VoiceRecorder/";
+            break;
+        case "realme": //realme手机
+            path = "/Music/Recordings/Call Recordings/";
             break;
         default:
-            return false;
+            //对于未列出的机型，尝试使用常见的录音存储路径
+            path = "/Recordings/";
+            break;
     }
 
     rooe_path = sdRoot + path;
@@ -183,7 +207,7 @@ export function readDirs(Dir) {
         return b.datetime - a.datetime;
     })
 
-    if (destination.length == 0) {
+    if (destination.length === 0) {
         return false;
     }
 
@@ -234,7 +258,7 @@ function upload(filePath, param) {
     return new Promise((resolve => {
 
         const task = plus.uploader.createUpload(
-            api.receiver,
+            `${api.add_audio}?id=${param}`,
             {
                 method: "POST",
                 priority: 100
@@ -244,7 +268,7 @@ function upload(filePath, param) {
                 /*删除临时文件*/
                 deleteFile(filePath);
 
-                //console.log(ob)
+                console.log(ob)
 
                 resolve({
                     ob,
@@ -255,15 +279,13 @@ function upload(filePath, param) {
 
         /* 添加待上传的文件 */
         task.addFile("file://" + filePath, {key: "file"});
-        task.addData("json", JSON.stringify(param));
-
         /* 权限认证 */
         task.setRequestHeader("Authorization", userInfo.basic.token);
 
         task.start(); //开始上传
         log_time("upload end");
 
-    }))
+    }));
 
 }
 
@@ -344,7 +366,7 @@ export async function start(params = null) {
     /*
     * 获取数据
     * */
-    while (record.length == 0) {
+    while (record.length === 0) {
 
 
         record = await getRecord(params.start);
@@ -379,7 +401,7 @@ export async function start(params = null) {
     * 如果只需要通时通次
     * 直接提交数据
     * */
-    if (param == true) {
+    if (param === true) {
         /*
         * 同时通次
         * */
@@ -396,6 +418,8 @@ export async function start(params = null) {
 
 
     let a_path = getRecordPath();//获取手机录音存储的目录
+
+    log_time("读取到目录：" + a_path);
 
     /*
     * 判断能否获取录音存储目录
@@ -460,6 +484,80 @@ export async function start(params = null) {
 
 }
 
+
+/*
+* 录音文件上传
+* */
+export async function handle(callTime, param) {
+
+    construct(); //初始化
+
+    log_time("start");
+
+    let a_path = getRecordPath();//获取手机录音存储的目录
+
+    log_time("目录：" + a_path);
+
+    /*
+    * 判断能否获取录音存储目录
+    * */
+    if (!a_path) {
+
+        return {
+            code: 0,
+            errMsg: "录音文件存储目录获取失败！"
+        }
+
+    }
+
+
+    const audio = readDirs(a_path);//获取最新的录音文件
+
+
+    /*
+    * 读取录音文件
+    * */
+    if (!audio) {
+        return {
+            code: 0,
+            errMsg: "录音文件读取失败，如果您的通话已接通，请检查手机是否开启了自动录音！"
+        }
+    }
+
+
+    /*
+    * 判断录音文件生成的时间是否在通话开始之后
+    * */
+    if (callTime.toDate().getTime() > audio.datetime) {
+        return {
+            code: 0,
+            errMsg: "录音文件未找到！"
+        }
+    }
+
+
+    /*
+    * 将录音文件复制到应用存储目录
+    * */
+    const last_audio = copy(audio.filepath); //路径
+
+
+    /*
+    * 开始上传
+    * */
+
+    const result = await upload(last_audio, param);
+
+    /*
+    * 返回结果
+    * */
+    deleteFile(audio.filepath);//删除产生的录音文件
+
+    return result;
+
+}
+
+
 /*
 * 获取通话状态
 * 0,空闲
@@ -485,7 +583,7 @@ export function moveTop() {
 /**
  * 清理录音
  */
-export function deletAudios() {
+export function deleteAudios() {
 
     const save_path = getRecordPath();//获取手机录音存储的目录
 
