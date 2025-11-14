@@ -22,11 +22,7 @@ APP代码的相关说明：<https://nicen.cn/8245.html>
 * APP下载地址：<https://cdn3.nicen.cn/call.apk?v=1.1>
 * 测试账号：ali 123456
 
-> 如需Saas服务（提供后台和APP，可自行添加账号，不限用户数量、自定义APP名称和图标）80元/月
->
-> 如需全套源代码，单公司版本价格为2500、Saas多公司版为4800
->
-> 如有需要wx good7341
+> 如有需要请加wx good7341
 
 ![外呼APP](./demo/app.png "外呼APP")
 
