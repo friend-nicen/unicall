@@ -18,7 +18,7 @@ APP代码的相关说明：<https://nicen.cn/8245.html>
 
 下面是一个实现了外呼相关基础功能的完整项目，后端是PHP、后台是Vue3。 新版在开源版的基础上重构而成，性能更好，代码更规范，功能更丰富。
 
-* 后台地址：<https://call.nicen.cn/admin/index.html>
+* 后台地址：<https://call.nicen.cn/trial?as=admin>
 * APP下载地址：<https://cdn3.nicen.cn/call.apk?v=1.1>
 * 测试账号：ali 123456
 
