@@ -8,7 +8,7 @@
 
 **上传通话录音**是提前让用户开启通话自动录音，然后App去读取通话完成后产生的录音文件，来实现通话录音上传
 
-APP代码的相关说明：<https://nicen.cn/8245.html>
+APP代码的相关说明：<https://nicen.cn/8245.html>、<https://nicen.cn/8524.html>
 
 ## V2版
 
