@@ -1,33 +1,28 @@
 <template>
 
   <div class="tabbar">
-    <van-tabs :color="$theme['primary-color']" class="tab-top" v-model:active="condition.data.status">
-      <van-tab title="全部" :name="0"></van-tab>
-      <van-tab title="未接" :name="1"></van-tab>
-      <van-tab title="接通" :name="2"></van-tab>
+    <van-tabs v-model:active="condition.data.status" :color="$theme['primary-color']" class="tab-top" shrink>
+      <van-tab :name="-1" title="全部"></van-tab>
+      <van-tab :name="0" title="未接"></van-tab>
+      <van-tab :name="1" title="接通"></van-tab>
     </van-tabs>
-
-    <div class="filter" @click="showFilter">
-      <van-icon name="filter-o"/>
-    </div>
-
+    <!--    <div class="filter" @click="visible_filter = true">
+          <van-icon name="filter-o"/>
+        </div>-->
   </div>
 
 </template>
 
 <script setup>
-import {inject} from "vue";
-import load from "@/common/usual/load";
 
-//const filter_visible = inject('filter_visible');
-const condition = inject('condition');
+import {injects} from "@/common";
 
-
-/* 显示标签 */
-const showFilter = () => {
-  load.success('ok')
-}
-
+/* 条件 */
+const {
+  condition
+} = injects([
+  'condition'
+]);
 </script>
 
 <style lang="scss" scoped>
@@ -43,9 +38,12 @@ const showFilter = () => {
   border-bottom: solid $border-color 1px;
 
   .filter {
+    position: absolute;
+    right: 0;
+    top: 0;
     flex-shrink: 0;
-    height: inherit;
-    height: 45px;
+    height: 100%;
+    background-color: white;
     @include flex-center;
 
 

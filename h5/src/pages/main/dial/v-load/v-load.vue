@@ -3,7 +3,7 @@
     <van-loading size="24px">加载中...</van-loading>
   </div>
 
-  <div class="no-more" v-if="pagination.data.page == pagination.data.last_page">
+  <div class="no-more" v-if="pagination.data.page === pagination.data.last_page">
     没有更多了
   </div>
 </template>

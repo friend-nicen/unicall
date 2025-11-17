@@ -8,19 +8,16 @@ import {defineStore} from "pinia";
 
 const setting = defineStore('setting', {
     state() {
-
-        /*初始数据列表*/
+        /* 初始数据列表 */
         return {
-            doc_title: null, //导航栏标题
-            record_audio: false,//是否需要录制音频
+            title: null, //导航栏标题
+            record: false,//是否需要录制音频
         }
     },
     actions: {
-        /*
-        * 切换显示
-        * */
+        /* 切换模式 */
         toggleRecord(status) {
-            this.record_audio = status;
+            this.record = status;
         }
     }
 })

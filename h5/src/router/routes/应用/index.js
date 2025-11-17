@@ -11,6 +11,6 @@ export default function (obj = {}) {
             redirect: "/main/dash",
             component: () => import('@/layouts/tab-layout.vue'),
             children: children.主页.default(obj)
-        },
+        }
     ]
 }

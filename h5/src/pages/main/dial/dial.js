@@ -1,7 +1,7 @@
 /* eslint-disable */
 import {inject, onActivated, provide, ref, watch} from 'vue'
-import {store, switchForm} from "@/common/usual/common";
-import load from "@/common/usual/load";
+import {store, switchForm} from "@/common";
+import load from "@/common/load";
 import api from "@/service/api";
 import axios from "axios";
 import {debounce} from "lodash";
@@ -14,7 +14,6 @@ export default function () {
     const loaded = ref(false);
     const loading = ref(false); //加载状态
     const tabView = inject('tabView');
-    const filter_visible = ref(false); //过滤筛选
 
     /* 滚动监测 */
     const {arrivedState} = useScroll(tabView,
@@ -35,7 +34,7 @@ export default function () {
 
     /* 搜索条件 */
     const condition = store({
-        status: 0,
+        status: -1,
     });
 
     /* 依赖注入 */
@@ -46,44 +45,36 @@ export default function () {
 
     /* 加载当前条件下的用户数据 */
     const loadData = () => {
-
-        /* 显示加载效果 */
-        //load.loading("加载中...");
-
         try {
             /* 开始请求 */
-            axios.post(api.dial_list, switchForm(condition.data, {
+            axios.post(api.custs.calls, switchForm(condition.data, {
                 pageSize: pagination.data.pageSize,
                 page: pagination.data.page
             })).then((res) => {
-                /*
-                * 判断请求结果
-                * */
+                /* 判断请求结果 */
                 if (res.data.code) {
-
                     /* 响应数据 */
-                    loaded.value = true;
                     const body = res.data.data;
-
                     /* 续还是重新定义 */
-                    if (pagination.data.page == 1) {
+                    if (pagination.data.page === 1) {
                         data.value = body.data; //数据
                     } else {
-                        data.value = data.value.concat(body.data); //数据
+                        data.value = data.value.concat(body.data);
                     }
-
                     /* 分页信息 */
                     pagination.data.page = body.current_page;
                     pagination.data.total = body.total;
                     pagination.data.last_page = body.last_page;
-
                 } else {
                     /* 弹出错误原因 */
-                    load.error(res.data.errMsg);
+                    load.toast(res.data.errMsg);
                 }
+
+                /* 结束 */
+                loaded.value = true;
             }).catch((e) => {
                 /* 弹出错误原因 */
-                load.error(e.message);
+                load.toast(e.message);
             }).finally(() => {
                 /* 关闭加载效果 */
                 load.loaded();
@@ -92,7 +83,7 @@ export default function () {
             });
         } catch (e) {
             console.log(e)
-            load.error(e);
+            load.toast(e);
         }
 
 
@@ -135,7 +126,6 @@ export default function () {
         loaded,
         loadData,
         data,
-        condition,
-        api
+        condition
     }
 }

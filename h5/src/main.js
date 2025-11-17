@@ -3,8 +3,12 @@ import App from './App.vue'
 import {createPinia} from "pinia"
 import {router} from "./router/index";
 
-//import VConsole from "vconsole";
-//new VConsole();
+/* 控制台 */
+import VConsole from "vconsole";
+
+/* 是否显示 */
+if (window.vconsole_visible) new VConsole();
+
 
 /* 单独的样式 */
 import 'vant/es/toast/style';
@@ -12,18 +16,24 @@ import 'vant/es/dialog/style';
 import 'vant/es/notify/style';
 import 'vant/es/image-preview/style';
 
-import batch____import from './utils/auto_import'
+import batch____import from './utils/import'
 import goto____bootstrap from "./utils/bootstrap";
-
-import  './mock';//接口模拟
-
+import register____global from "@/utils/register";
 
 /* 初始化vue */
 let app = createApp(App);
-app.use(createPinia());//状态管理器
-app.use(router);//路由加载
 
-batch____import(app);//批量导入组件
-goto____bootstrap(); //引导系统初始化
+/* 状态管理器 */
+app.use(createPinia());
+
+/* 路由加载 */
+app.use(router);
+
+/* 批量导入组件 */
+batch____import(app);
+
+/* 引导系统初始化 */
+goto____bootstrap();
+register____global(app);
 
 app.mount('#app')

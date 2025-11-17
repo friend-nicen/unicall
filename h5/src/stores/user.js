@@ -14,38 +14,38 @@ export default defineStore('userInfo', {
     state() {
         /*初始数据列表*/
         return {
-
-            basic: {
-                nickname: "",
-                username: "",
-                used: "",
-                token: "",
-                expireAt: null,
-                role: {
-                    id: null,
-                    name: null
-                },
-                depart: {
-                    name: null,
-                    id: null
-                },
-                cookie: {
-                    qcc: ""
-                },
-            }
+            id: null,
+            nickname: "",
+            username: "",
+            used: "",
+            token: "",
+            monitor: null,
+            expireAt: null,
+            role: {
+                id: null,
+                name: null
+            },
+            permissions: [],
+            depart: {
+                name: null,
+                id: null
+            },
+            cookie: {
+                qcc: ""
+            },
         }
     },
     actions: {
-        /*
-        * 保存用户信息
-        * */
+        /* 保存用户信息 */
         save(state) {
 
-            this.$state.basic = state;//保存用户信息
+            /* 保存用户信息 */
+            this.$state = state;
 
-            /*如果是token模式*/
-            if (config.auth.mode == "token") {
-                Cookies.set(config.auth.token, state.token, {expires: state.expireAt}); //保存token
+            /* 如果是token模式 */
+            if (config.auth.mode === "token") {
+                /* 保存token */
+                Cookies.set(config.auth.token, state.token, {expires: state.expireAt});
             }
         }
     }

@@ -1,11 +1,11 @@
 <template>
 
-  <div class="pannel" v-if="loaded">
+  <div v-if="loaded" class="pannel">
 
     <!-- 筛选条件 -->
     <v-condition/>
 
-    <ul class="customers" v-if="data.length > 0">
+    <ul v-if="data.length > 0" class="customers">
 
       <template v-for="(item,index) of data" :key="index">
         <li class="item">
@@ -16,9 +16,9 @@
               <span class="name">{{ item.name }}</span>
             </div>
 
-            <span class="status">
-              {{ item.duration == 0 ? "未接" : '已接通' }}
-            </span>
+            <v-tag :color="item.status">
+              {{ item.status ? '已接通' : "未接听" }}
+            </v-tag>
 
           </div>
 
@@ -27,25 +27,42 @@
 
             <div class="left">
               <div class="mobile">
-                手机号：{{ !item.mobile ? "无" : item.mobile }}
+                手机号：{{ !item.phone ? "无" : item.phone }}
               </div>
               <div class="name">
                 归属地：{{ !item.place ? "未知" : item.place }}
               </div>
               <div class="name">
-                呼出时间：{{ !item.callTime ? "无" : item.callTime }}
+                呼出时间：{{ !item.call_time ? "无" : item.call_time }}
               </div>
             </div>
 
             <div class="all">
-              <span class="time">{{ item.duration }}s</span>
-              <div class="right" :class="{dialed:item.dial>0}" @click.stop="dial(item)">
+              <div :class="{dialed:item.dial > 0}" class="right" @click.stop="call(item)">
                 <van-icon name="phone-o"/>
               </div>
             </div>
 
 
           </div>
+
+
+          <!-- 音频播放器 -->
+          <div v-if="item.audio" class="audio-player">
+            <div class="player-controls">
+              <div class="play-btn" @click.stop="togglePlay(item, index)">
+                <van-icon :name="isPlaying(index) ? 'pause-circle-o' : 'play-circle-o'"/>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" :style="{width: getProgress(index) + '%'}"></div>
+              </div>
+              <div class="time-remaining">
+                {{ isPlaying(index) ? formatTime(getRemainingTime(index)) : formatTime(item.duration) }}
+              </div>
+            </div>
+          </div>
+
+
         </li>
       </template>
 
@@ -54,13 +71,13 @@
     </ul>
 
     <van-empty v-else description="暂无数据">
-      <van-button plain @click.stop="loadData" size="small" round type="primary" class="bottom-button">重新加载
+      <van-button class="bottom-button" plain round size="small" type="primary" @click.stop="loadData">重新加载
       </van-button>
     </van-empty>
   </div>
 
   <div v-else class="skeleton">
-    <van-skeleton title :row="20"/>
+    <van-skeleton :row="20" title/>
   </div>
 
 </template>
@@ -71,19 +88,26 @@ import VCondition from "./v-condition";
 import VLoad from "./v-load";
 import api from '@/service/api'
 import init_comuni from "./comunicate";
+import init_audio from './audio';
 
-
-let {
+const {
   loaded,
   loadData,
   data
 } = init();
 
 
-let {
-  dial
+const {
+  call
 } = init_comuni(loadData);
 
+const {
+  togglePlay,
+  isPlaying,
+  getProgress,
+  getRemainingTime,
+  formatTime
+} = init_audio();
 
 </script>
 
@@ -97,15 +121,16 @@ let {
   .customers {
 
     list-style: none;
-    padding: 0;
-    margin: 12px 0;
+    padding: 8px 10px 16px;
+
 
     .item {
 
       background-color: white;
-      border-radius: 8px;
-      padding: 15px 15px 12px;
-      margin: 12px 15px;
+      border-radius: 12px;
+      border: 1px solid #f0f0f0;
+      margin-bottom: 12px;
+      padding: 20px 20px;
 
       @mixin space-between {
         @include flex-center;
@@ -212,8 +237,57 @@ let {
 
       }
 
-    }
 
+      /* 音频播放器样式 */
+      .audio-player {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #f5f5f5;
+
+        .player-controls {
+          @include flex-center;
+          justify-content: space-between;
+          align-items: center;
+
+          .play-btn {
+            @include flex-center;
+            align-items: center;
+            color: $primary-color;
+
+            .van-icon {
+              font-size: $font-size-1;
+            }
+          }
+
+          .progress-bar {
+            flex: 1;
+            height: 4px;
+            background-color: #f1f1f1;
+            border-radius: 2px;
+            margin: 0 10px;
+            position: relative;
+            overflow: hidden;
+
+            .progress {
+              position: absolute;
+              left: 0;
+              top: 0;
+              height: 100%;
+              background-color: $primary-color;
+              border-radius: 2px;
+            }
+          }
+
+          .time-remaining {
+            font-size: $font-size-5;
+            color: $sm-color;
+            min-width: 40px;
+            text-align: right;
+          }
+        }
+      }
+
+    }
   }
 }
 

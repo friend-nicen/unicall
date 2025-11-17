@@ -1,6 +1,6 @@
 <template>
   <div class="flex-space">
-    <van-popover v-model:show="showPopover" placement="bottom-end" @select="onSelect" :actions="actions">
+    <van-popover v-model:show="visible" :actions="actions" placement="bottom-end" @select="onSelect">
       <template #reference>
         <van-icon class-prefix="icon" name="caidan_2"></van-icon>
       </template>
@@ -10,41 +10,33 @@
 
 <script setup>
 import {ref} from "vue";
-import open_set from "@/common/html5plus/open_set";
-import load from "@/common/usual/load";
-import {deletAudios} from "@/common/html5plus/monitor";
+import load from "@/common/load";
+import invoke from "@/utils/bridge";
 
-const showPopover = ref(false);
+const visible = ref(false);
 
 const actions = [
   {text: '权限设置', icon: 'setting-o'},
-  {text: '录音清理', icon: 'delete-o'},
   {text: '退出应用', icon: 'revoke'},
 ];
 
-/*
-* 功能面板
-* */
+/* 功能面板 */
 const onSelect = (action) => {
-
-  if (action.text == '权限设置') {
-    open_set();
-  } else if (action.text == '退出应用') {
-    load.confirm("确定退出应用？", () => {
-      plus.runtime.quit();
+  if (action.text === '权限设置') {
+    invoke({
+      action: "openSet"
+    }).catch(e => {
+      load.toast(e.message);
     })
-  } else if (action.text == '录音清理') {
-    load.confirm("确定清理所有录音文件？", () => {
-      deletAudios();
-    })
+  } else if (action.text === '退出应用') {
+    load.confirm("确定退出应用？", () => plus.runtime.quit());
   }
-
 };
-
 
 </script>
 
 <style lang="scss" scoped>
+
 .flex-space {
 
   @include flex-center;

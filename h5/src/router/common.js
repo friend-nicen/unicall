@@ -1,8 +1,8 @@
-/*
-* 操作路由的相关方法
-* */
+/**
+ * 操作路由的相关方法
+ **/
 import {router} from "@/router";
-import user from "@/stores/user";
+import _user from "@/stores/user";
 
 
 /*
@@ -21,15 +21,15 @@ export function getChildren(path) {
     * path是一个完整的路由路径
     * */
     const routes = router.getRoutes();//得到的一个可以随意修改的不影响router 的数组
-    const users = user();  /*用户信息*/
+    const user = _user();  /*用户信息*/
     let children = [];//
 
-    /*
-    * 对比路由
-    * 判断是否具有子路由
-    * */
+    /**
+     * 对比路由
+     * 判断是否具有子路由
+     **/
     for (let i of routes) {
-        if (i.path == path) {
+        if (i.path === path) {
             if (!!i.children) {
                 children = i.children;
             }
@@ -37,41 +37,34 @@ export function getChildren(path) {
     }
 
 
-    /*
-    * 拼接完整的子路由path访问路径
-    * */
+    /**
+     * 拼接完整的子路由path访问路径
+     **/
     children = children.filter((i) => {
 
-        /*
-        * 判断是否作为菜单
-        * 判断是否是动态路由
-        * 判断权限是否够
-        * */
-        if (i.meta && ((i.meta.menu === false) || (i.path.indexOf(":") >= 0) || (users.basic.role < i.meta.role))) {
-            return false;
-        } else {
-            return true;
-        }
+        /**
+         * 判断是否作为菜单
+         * 判断是否是动态路由
+         * 判断权限是否够
+         **/
+        return !(i.meta && ((i.meta.menu === false) || (i.path.indexOf(":") >= 0) || (user.role < i.meta.role)));
 
     }).map((i) => {
 
-        /*
-        * 获取路由的完整路径
-        * */
-        //如果本身就是绝对路径
+        /**
+         * 获取路由的完整路径
+         **/
         if (!i.path.startsWith('/')) {
-            //如果是相对路径
-            if (path == '/') {
+            if (path === '/') {
                 i.path = path + i.path;
             } else {
                 i.path = path + '/' + i.path;
             }
         }
 
-        /*
-        *
-        * 根据完整路径递归子路由
-        * */
+        /**
+         * 根据完整路径递归子路由
+         */
         if (!!i.children) {
             i.children = getChildren(i.path);
         }
@@ -83,14 +76,12 @@ export function getChildren(path) {
 }
 
 
-/*
-* 批量导入子路由
-* */
-
+/**
+ * 批量导入子路由
+ **/
 export function getChildrens() {
 
-
-    /*批量导入子路由*/
+    /* 批量导入子路由 */
     const modules = import.meta.glob(['@/router/*/index.js', '@/router/*/*/index.js', '@/router/*/*/*/index.js', '@/router/*/*/*/*/index.js'], {eager: true});
     const AutoRoutes = Object.create(null);//空对象；
 

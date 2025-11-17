@@ -1,26 +1,61 @@
 <template>
-  <span class="tag">
-    <slot></slot>
-  </span>
+  <div :style="{
+    color:activeColor.color,
+    backgroundColor:activeColor.bgColor}"
+       class="status-badge">
+    <slot/>
+  </div>
 </template>
 
 <script setup>
+import {computed} from "vue";
 
+const props = defineProps({
+  color: {
+    required: false,
+    default: 0
+  }
+});
+
+const colors = {
+  0: {
+    color: "#cf1322",
+    bgColor: "#fff1f0"
+  },
+  1: {
+    color: "#f57c00",
+    bgColor: "#fff3e0"
+  },
+  2: {
+    color: "#389e0d",
+    bgColor: "#f6ffed"
+  },
+  3: {
+    color: "#0958d9",
+    bgColor: "#e6f4ff"
+  },
+  4: {
+    color: "#08979c",
+    bgColor: "#e6fffb"
+  },
+}
+
+const activeColor = computed(() => {
+  if (props.color in colors) {
+    return colors[props.color]
+  } else {
+    return colors[0];
+  }
+})
 </script>
 
 <style lang="scss" scoped>
-.tag {
-  color: white;
-  outline: none;
-  border: none;
-
-  padding: 2px 6px;
-  font-size: $font-size-4;
-  border-radius: 30px;
-  background-color: $primary-color;
-
-  &:active {
-    background-color: $active-color;
-  }
+/* 状态标签 */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 </style>

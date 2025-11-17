@@ -2,36 +2,45 @@
   <template v-if="loaded">
     <div class="statistic">
       <div class="top">
-        <div class="left">数据概览</div>
+        <div class="left">数据日报</div>
 
         <div class="right" @click="showCan = true">
-          {{ range[0] }} ~ {{ range[1] }}
+          <span class="date">{{ range }}</span>
+          <van-icon name="arrow"/>
         </div>
       </div>
       <div class="main">
         <div class="item">
-          <div class="data">{{ chart.data.count }}</div>
-          <div class="field">总用户数</div>
+          <div class="data">{{ chart.cust }}</div>
+          <div class="field">客户总数</div>
         </div>
         <div class="item">
-          <div class="data">{{ chart.data.week }}</div>
-          <div class="field">一星期内</div>
+          <div class="data">{{ chart.call }}</div>
+          <div class="field">通话总数</div>
         </div>
         <div class="item">
-          <div class="data">{{ chart.data.half }}</div>
-          <div class="field">半个月内</div>
+          <div class="data">{{ chart.day_cust }}</div>
+          <div class="field">新增客户</div>
         </div>
         <div class="item">
-          <div class="data">{{ chart.data.month }}</div>
-          <div class="field">一个月内</div>
+          <div class="data">{{ chart.day_call }}</div>
+          <div class="field">新增通话</div>
         </div>
         <div class="item">
-          <div class="data">{{ chart.data.dial_count }}</div>
+          <div class="data">{{ chart.total }}</div>
           <div class="field">通话次数</div>
         </div>
         <div class="item">
-          <div class="data">{{ chart.data.dial_duration }}</div>
-          <div class="field">通话时长</div>
+          <div class="data">{{ chart.answer }}</div>
+          <div class="field">接通次数</div>
+        </div>
+        <div class="item">
+          <div class="data">{{ chart.missed }}</div>
+          <div class="field">未接次数</div>
+        </div>
+        <div class="item">
+          <div class="data">{{ chart.duration }}</div>
+          <div class="field">通话时间(s)</div>
         </div>
       </div>
     </div>
@@ -43,40 +52,45 @@
         <div class="right"></div>
       </div>
       <div class="main">
-        <div class="app" @click="openQcc">
-          <div class="logo">
-            <img src="@/assets/images/qcc.png" alt="企查查"/>
+        <template v-for="i of app" :key="i.title">
+          <div class="app" @click="$router.push(`/browser?url=${i.url}&title=${i.title}`)">
+            <div class="logo">
+              <img :alt="i.title" :src="i.icon"/>
+            </div>
+            <div class="field">{{ i.title }}</div>
           </div>
-          <div class="field">企查查</div>
-        </div>
+        </template>
       </div>
     </div>
   </template>
   <div v-else class="skeleton">
-    <van-skeleton title :row="20"/>
+    <van-skeleton :row="20" title/>
   </div>
 
-  <van-calendar allow-same-day :min-date="minDate" type="range" v-model:show="showCan" @confirm="selectDate"/>
+  <van-calendar
+      v-model:show="showCan"
+      :max-date="maxDate"
+      :min-date="minDate"
+      allow-same-day
+      type="single"
+      @confirm="selectDate"/>
 </template>
 
 <script setup>
-import init from './chart'
-import extra from './app'
+import init from './chart';
+import initApp from './app';
 
-
-let {
+const {
   showCan,
   selectDate,
   range,
   loaded,
   chart,
-  minDate
+  minDate,
+  maxDate
 } = init()
 
-
-let {
-  openQcc
-} = extra();
+const app = initApp();
 
 </script>
 
@@ -110,6 +124,10 @@ let {
     .right {
       @include flex-center;
 
+      .date {
+        margin-right: 6px;
+      }
+
       &,
       .text {
         font-size: $font-size-3;
@@ -122,7 +140,7 @@ let {
     @include flex-center;
     flex-wrap: wrap;
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
 
     .item {
       @include flex-center;
@@ -166,7 +184,6 @@ let {
           width: 60%;
           border-radius: 10px;
           overflow: hidden;
-          box-shadow: $box-shadow;
         }
       }
     }

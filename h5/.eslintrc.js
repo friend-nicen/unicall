@@ -1,6 +1,7 @@
 module.exports = {
     globals: {
-        plus: "writable"
+        plus: "writable",
+        uni: "writable"
     },
     "env": {
         "browser": true,

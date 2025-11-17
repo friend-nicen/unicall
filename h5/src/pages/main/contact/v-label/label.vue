@@ -1,103 +1,100 @@
 <template>
 
   <van-popup
-      v-model:show="label_visible"
+      v-model:show="visible"
+      :style="{ height: '45%' }"
       closeable
-      round
+      destroy-on-close
       position="bottom"
-      :style="{ height: '50%' }"
-  >
+      round
+      teleport="body"
+      @closed="customer = null">
 
-    <div class="label" v-if="loaded">
-
+    <div v-if="customer" class="label">
       <template v-if="labels.length > 0">
-
-        <!-- 标题 -->
-        <div class="title">{{ select_customer.data.name }}</div>
-
+        <div class="title">{{ customer.name }}</div>
         <ul class="label-list">
-
           <template v-for="item of labels" :key="item.value">
-
-            <li class="label" @click="toglleLabel(item.value)" :class="{active:label.indexOf(item.value) > -1}">
+            <li :class="{active:label.indexOf(item.value) > -1}" class="label" @click="toggleLabel(item.value)">
               {{ item.label }}
             </li>
-
           </template>
-
-
         </ul>
-
-        <van-button plain size="small" round type="primary" @click="modify" class="bottom-button">修改标签</van-button>
-
+        <van-button class="bottom-button" plain round size="small" type="primary" @click="modify">修改标签</van-button>
       </template>
-
       <van-empty v-else description="暂无数据"/>
-
     </div>
 
-    <div v-else class="skeleton">
-      <van-skeleton title :row="5"/>
-    </div>
 
   </van-popup>
 
 </template>
 
 <script setup>
-import {inject, watch, ref} from "vue";
+import {ref, watch} from "vue";
 import api from "@/service/api";
 import axios from "axios";
-import load from "@/common/usual/load";
+import load from "@/common/load";
+import {injects} from "@/common";
 
-const label_visible = inject('label_visible');
-const select_customer = inject('select_customer');
-const loaded = ref(false); //数据是否已加载
-const labels = inject("labels"); //所有标签
-const label = ref([]); //用户已经标记的标签
+/* 事件 */
+const visible = ref(false);
 
 
-/*
-* 加载个人的标签
-* */
+/* 状态 */
+const {
+  select_customer: customer,
+  labels
+} = injects([
+  'select_customer',
+  'labels'
+]);
+
+
+/* 用户已经标记的标签 */
+const label = ref([]);
+
+
+/**
+ * 加载个人的标签
+ */
 const loadLabel = () => {
   try {
+    /* 显示加载效果 */
+    load.loading("加载中...");
     /* 开始请求 */
-    axios.get(api.load_label + `?customer=${select_customer.data.id}`)
+    axios.get(api.label.lists + `?id=${customer.value.id}`)
         .then((res) => {
-          /*
-          * 判断请求结果
-          * */
+          /* 判断请求结果 */
           if (res.data.code) {
             label.value = res.data.data;
+            visible.value = true;
           } else {
             /* 弹出错误原因 */
-            load.error(res.data.errMsg);
+            load.toast(res.data.errMsg);
           }
         }).catch((e) => {
       /* 弹出错误原因 */
-      load.error(e.message);
+      load.toast(e.message);
     }).finally(() => {
       /* 关闭加载效果 */
-      load.loaded();
-      loaded.value = true;
+      load.loaded(0, true);
     });
 
   } catch (e) {
     console.log(e)
-    load.error(e);
+    load.toast(e);
   }
 }
 
-/*
-* 添加删除标签
-* */
-const toglleLabel = (item) => {
-
+/**
+ * 添加删除标签
+ * @param item
+ */
+const toggleLabel = (item) => {
   const index = label.value.indexOf(item);
-
   /* 添加 */
-  if (index == -1) {
+  if (index === -1) {
     label.value.push(item);
   } else {
     label.value.splice(index, 1);
@@ -109,29 +106,28 @@ const toglleLabel = (item) => {
 * 修改标签
 * */
 const modify = () => {
+
   /* 显示加载效果 */
   load.loading("加载中...");
 
   try {
     /* 开始请求 */
-    axios.post(api.modify_label, {
-      customer: select_customer.data.id,
-      label: label.value
+    axios.post(api.label.modify, {
+      id: customer.value.id,
+      labels: label.value
     }).then((res) => {
-      /*
-      * 判断请求结果
-      * */
+      /* 判断请求结果 */
       if (res.data.code) {
         /* 关闭显示 */
-        label_visible.value = false;
-        load.success("修改成功");
+        visible.value = false;
+        load.toast("修改成功");
       } else {
         /* 弹出错误原因 */
-        load.error(res.data.errMsg);
+        load.toast(res.errMsg);
       }
     }).catch((e) => {
       /* 弹出错误原因 */
-      load.error(e.message);
+      load.toast(e.message);
     }).finally(() => {
       /* 关闭加载效果 */
       load.loaded();
@@ -139,21 +135,16 @@ const modify = () => {
 
   } catch (e) {
     console.log(e)
-    load.error(e);
+    load.toast(e);
   }
 }
 
-/*
-* 检测
-* */
-watch(() => label_visible, () => {
-  if (label_visible.value) {
+/* 监听 */
+watch(() => customer.value, () => {
+  if (customer.value) {
     loadLabel();
   }
-}, {
-  deep: true
-})
-
+});
 </script>
 
 <style lang="scss" scoped>
@@ -172,6 +163,7 @@ watch(() => label_visible, () => {
     @include flex-center;
     color: $sm-color;
     font-size: $font-size-1;
+    padding: 6px 0 0;
   }
 
   .label-list {
@@ -204,12 +196,13 @@ watch(() => label_visible, () => {
 
   .bottom-button {
     flex-shrink: 0;
-    padding: 10px 30px;
+    padding: 0 10px;
+    height: 36px;
     background-color: rgba($primary-color, 0.1);
     color: $primary-color;
     border: 1px $primary-color solid;
-    margin: 20px 15% 15px;
-    width: 70%;
+    margin: 20px 20% 15px;
+    width: 60%;
   }
 
 }

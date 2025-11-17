@@ -1,6 +1,6 @@
 {
     "name" : "外呼APP",
-    "appid" : "__UNI__9BE",
+    "appid" : "__UNI__B9C7EE5",
     "description" : "外呼APP",
     "versionName" : "1.5",
     "versionCode" : "100",
@@ -16,7 +16,9 @@
             "delay" : 0
         },
         "modules" : {
-            "Contacts" : {}
+            "Contacts" : {},
+            "SQLite" : {},
+            "Messaging" : {}
         },
         /* 模块配置 */
         "distribute" : {
@@ -55,35 +57,6 @@
                     "<uses-permission android:name=\"android.permission.WRITE_SMS\"/>"
                 ],
                 "abiFilters" : [ "armeabi-v7a", "x86" ]
-            },
-            "ios" : {
-                "privacyDescription" : {
-                    "NSCameraUsageDescription" : "录制视频",
-                    "NSMicrophoneUsageDescription" : "1111",
-                    "NSPhotoLibraryUsageDescription" : "111",
-                    "NSPhotoLibraryAddUsageDescription" : "111",
-                    "NSLocationWhenInUseUsageDescription" : "111",
-                    "NSLocationAlwaysUsageDescription" : "111",
-                    "NSLocationAlwaysAndWhenInUseUsageDescription" : "111",
-                    "NSCalendarsUsageDescription" : "11",
-                    "NSContactsUsageDescription" : "111",
-                    "NSBluetoothPeripheralUsageDescription" : "111",
-                    "NSBluetoothAlwaysUsageDescription" : "111",
-                    "NSSpeechRecognitionUsageDescription" : "111",
-                    "NSRemindersUsageDescription" : "111",
-                    "NSMotionUsageDescription" : "111",
-                    "NSHealthUpdateUsageDescription" : "1111",
-                    "NSHealthShareUsageDescription" : "111",
-                    "NSAppleMusicUsageDescription" : "111",
-                    "NFCReaderUsageDescription" : "1111",
-                    "NSHealthClinicalHealthRecordsShareUsageDescription" : "111",
-                    "NSSiriUsageDescription" : "111",
-                    "NSHomeKitUsageDescription" : "111",
-                    "NSFaceIDUsageDescription" : "111",
-                    "NSLocalNetworkUsageDescription" : "111",
-                    "NSUserTrackingUsageDescription" : "111"
-                },
-                "dSYMs" : false
             },
             /* ios打包配置 */
             "sdkConfigs" : {
@@ -124,6 +97,9 @@
             },
             "splashscreen" : {
                 "useOriginalMsgbox" : true
+            },
+            "ios" : {
+                "dSYMs" : false
             }
         }
     },

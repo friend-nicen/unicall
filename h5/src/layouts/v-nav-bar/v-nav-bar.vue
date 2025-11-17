@@ -25,7 +25,7 @@ export default {
     return () => {
       return h(NavBar, {}, {
         right: () => h(NavRight),
-        left: () => h("span", {"innerHTML": settings.doc_title})
+        left: () => h("span", {"innerHTML": settings.title})
       });
     }
 

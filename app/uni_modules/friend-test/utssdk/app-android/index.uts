@@ -1,0 +1,252 @@
+/* 引入 Android 系统库（UTS 支持的包级导入方式） */
+import File from "java.io.File";
+import Environment from "android.os.Environment";
+import Build from "android.os.Build";
+import FileInputStream from "java.io.FileInputStream";
+import FileOutputStream from "java.io.FileOutputStream";
+import System from "java.lang.System";
+import Intent from "android.content.Intent";
+import Uri from "android.net.Uri";
+import Settings from "android.provider.Settings";
+import { UTSAndroid } from "io.dcloud.uts";
+
+/* 最新录音文件查询结果类型 */
+export type LatestAudioResult = {
+	file : string;
+	count : number;
+}
+
+
+/* 最新录音文件查询结果类型 */
+export type QueryLatest = {
+	latestTime : number;
+	audioPath ?: string;
+}
+
+/* 将功能封装为类：在构造函数中设置 audioPath */
+export default class Scanner {
+	sdRoot : string;
+
+	constructor() {
+		/* 获取根目录 */
+		const ext = Environment.getExternalStorageDirectory();
+		this.sdRoot = ext.getAbsolutePath();
+	}
+
+	/* 获取不同厂商的录音文件目录（返回完整路径） */
+	getDevicePath() : string {
+
+		const manufacturer = Build.MANUFACTURER.toLowerCase();
+
+		let subPath = "";
+		switch (manufacturer) {
+			case "xiaomi":
+			case "redmi":
+				subPath = "/MIUI/sound_recorder/call_rec/";
+				break;
+			case "huawei":
+			case "honor":
+			case "nova":
+				subPath = "/Sounds/CallRecord/";
+				break;
+			case "meizu":
+				subPath = "/Recorder/";
+				break;
+			case "oppo":
+			case "oneplus":
+			case "realme":
+				subPath = "/Music/Recordings/Call Recordings/";
+				break;
+			case "vivo":
+				subPath = "/Record/Call/";
+				break;
+			case "samsung":
+				subPath = "/Sounds/";
+				break;
+			case "sony":
+				subPath = "/Music/PCMRecordings/";
+				break;
+			case "google":
+				subPath = "/VoiceRecorder/";
+				break;
+			case "asus":
+				subPath = "/Recorder/Recordings/";
+				break;
+			case "lg":
+				subPath = "/VoiceRecorder/";
+				break;
+			default:
+				subPath = "/Recordings/";
+				break;
+		}
+
+		return this.sdRoot + subPath;
+	}
+
+	/* 读取目录下最新的录音文件 */
+	getLatestAudio(option : QueryLatest) : LatestAudioResult {
+
+		/*  定义录音文件路径 */
+		if (option.audioPath != null) {
+			option.audioPath = this.sdRoot + option.audioPath;
+			const initDir = new File(option.audioPath as string);
+			if (!initDir.exists() || !!initDir.isDirectory()) {
+				option.audioPath = this.getDevicePath();
+			}
+		} else {
+			option.audioPath = this.getDevicePath();
+		}
+
+		/* 目录对象 */
+		const dir = new File(option.audioPath as string);
+
+		if (!dir.exists() || !dir.isDirectory()) {
+			throw new UniError('scanner', 0, '录音文件目录不存在');
+		}
+
+		const files = dir.listFiles();
+		if (files == null || files.size == 0) {
+			throw new UniError('scanner', 0, '本次通话没有产生录音文件');
+		}
+
+		let latest : File | null = null;
+		const countInt : Int = files.size;
+		const count : number = countInt;
+		option.latestTime = option.latestTime * 1000;
+
+		for (let i : Int = 0; i < countInt; i = i + 1) {
+			const f = files[i];
+			if (f != null && f.isFile()) {
+				const lm = f.lastModified();
+				if (lm >= option.latestTime) {
+					latest = f;
+					option.latestTime = lm;
+				}
+			}
+		}
+
+		if (latest != null) {
+			return { file: latest.getAbsolutePath(), count: count };
+		}
+
+		throw new UniError('scanner', 0, '本次通话没有产生录音文件');
+	}
+
+	/* 获取应用私有文件目录 */
+	private getAppFilesDir() : string {
+		const ctx = UTSAndroid!.getAppContext();
+		const filesDir = ctx!.getFilesDir();
+		return filesDir.getAbsolutePath();
+	}
+
+	/* 将指定路径的文件复制到应用目录，返回复制后的完整路径 */
+	copy(srcPath : string) : string {
+		if (srcPath == "") {
+			new UniError('scanner', 0, '指定文件路径异常');
+		}
+		const src = new File(srcPath);
+		if (!src.exists() || !src.isFile()) {
+			throw new UniError('scanner', 0, '指定文件不存在');
+		}
+
+		const destDir = this.getAppFilesDir();
+		const dot = srcPath.lastIndexOf(".");
+		let ext = "";
+		if (dot >= 0) {
+			ext = srcPath.substring(dot);
+		}
+		const temp = destDir + "/" + System.currentTimeMillis() + ext;
+
+		const reader = new FileInputStream(srcPath);
+		const out = new FileOutputStream(temp);
+		const fisChannel = reader.getChannel();
+		const fosChannel = out.getChannel();
+		fisChannel.transferTo(0, fisChannel.size(), fosChannel);
+		reader.close();
+		out.close();
+		return temp;
+	}
+
+	/* 删除指定路径的文件，存在则删除，返回布尔值 */
+	unlink(path : string) : boolean {
+		if (path == "") {
+			return false;
+		}
+		const file = new File(path);
+		if (file.exists()) {
+			return file.delete();
+		}
+		throw new UniError('scanner', 0, '指定文件不存在');
+	}
+
+	/* 打开系统文件管理器并定位到录音文件目录 */
+	openDir() : void {
+		try {
+			const fullPath = this.getDevicePath();
+			/* 将绝对路径转换为 primary 根下的相对路径 */
+			let rel = fullPath;
+			if (fullPath.startsWith(this.sdRoot)) {
+				rel = fullPath.substring(this.sdRoot.length);
+				if (rel.startsWith("/")) {
+					rel = rel.substring(1);
+				}
+			}
+			/* 将斜杠替换为 URL 编码以适配 DocumentsProvider */
+			const encoded = rel.split("/").join("%2f");
+
+			const uri = Uri.parse("content://com.android.externalstorage.documents/document/primary:" + encoded);
+			const intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+			intent.addCategory(Intent.CATEGORY_OPENABLE);
+			intent.setType("*/*");
+			intent.putExtra("android.provider.extra.INITIAL_URI", uri);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+			const ctx = UTSAndroid!.getAppContext();
+			ctx!.startActivity(intent);
+		} catch (e) {
+			throw new UniError('scanner', 0, '无法打开文件管理器: ' + e);
+		}
+	}
+
+	/* 打开当前应用的系统设置页面（应用详情设置） */
+	openSet() : void {
+		try {
+			const ctx = UTSAndroid!.getAppContext();
+			const pkName = ctx!.getPackageName();
+			const uri = Uri.parse('package:' + pkName);
+			const intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, uri);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			ctx!.startActivity(intent);
+		} catch (e) {
+			throw new UniError('scanner', 0, '无法打开系统设置: ' + e);
+		}
+	}
+
+	/* 检测是否已获得悬浮窗权限 */
+	canOverlay() : boolean {
+		try {
+			const ctx = UTSAndroid!.getAppContext();
+			return Settings.canDrawOverlays(ctx!);
+		} catch (e) {
+			return false;
+		}
+	}
+
+	/* 跳转到悬浮窗权限设置页面 */
+	setOverlay() : void {
+		try {
+			const ctx = UTSAndroid!.getAppContext();
+			/* 已有权限则不处理 */
+			if (Settings.canDrawOverlays(ctx!)) {
+				return;
+			}
+			const pkName = ctx!.getPackageName();
+			const uri = Uri.parse('package:' + pkName);
+			const intent = new Intent('android.settings.action.MANAGE_OVERLAY_PERMISSION', uri);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			ctx!.startActivity(intent);
+		} catch (e) {
+			throw new UniError('scanner', 0, '无法跳转悬浮窗设置: ' + e);
+		}
+	}
+}

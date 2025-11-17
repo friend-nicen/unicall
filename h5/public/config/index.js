@@ -1,0 +1,1 @@
+window.vconsole_visible = true;

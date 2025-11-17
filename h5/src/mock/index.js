@@ -12,7 +12,7 @@ Mock.mock(new RegExp(`.*${api.login}.*`), /.*/, () => {
 
     return {
         "code": 1,
-        "errMsg": "登录成功！",
+        "errMsg": "登录成功",
         "data": {
             "nickname": "测试",
             "username": "10086",
@@ -88,7 +88,7 @@ Mock.mock(new RegExp(`.*${api.get_customers}.*`), () => {
 Mock.mock(new RegExp(`.*${api.load_labels}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "获取成功！",
+        "errMsg": "获取成功",
         "data": [
             {
                 "value": 7,
@@ -134,7 +134,7 @@ Mock.mock(new RegExp(`.*${api.load_labels}.*`), () => {
 Mock.mock(new RegExp(`.*${api.load_label}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "获取成功！",
+        "errMsg": "获取成功",
         "data": [
             7,
             16,
@@ -147,7 +147,7 @@ Mock.mock(new RegExp(`.*${api.load_label}.*`), () => {
 Mock.mock(new RegExp(`.*${api.detail}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "获取成功！",
+        "errMsg": "获取成功",
         "data": {
             "id": 1,
             "name": "中国移动",
@@ -203,7 +203,7 @@ Mock.mock(new RegExp(`.*${api.detail}.*`), () => {
 Mock.mock(new RegExp(`.*${api.load_follow}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "获取成功！",
+        "errMsg": "获取成功",
         "data": [
             {
                 "id": 2,
@@ -225,7 +225,7 @@ Mock.mock(new RegExp(`.*${api.load_follow}.*`), () => {
 Mock.mock(new RegExp(`.*${api.add_follow}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "添加成功！",
+        "errMsg": "添加成功",
         "data": []
     };
 });
@@ -233,7 +233,7 @@ Mock.mock(new RegExp(`.*${api.add_follow}.*`), () => {
 Mock.mock(new RegExp(`.*${api.del}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "删除成功！",
+        "errMsg": "删除成功",
         "data": []
     };
 });
@@ -242,7 +242,7 @@ Mock.mock(new RegExp(`.*${api.del}.*`), () => {
 Mock.mock(new RegExp(`.*${api.modify}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "修改成功！",
+        "errMsg": "修改成功",
         "data": []
     };
 });
@@ -250,7 +250,7 @@ Mock.mock(new RegExp(`.*${api.modify}.*`), () => {
 Mock.mock(new RegExp(`.*${api.risk}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "修改成功！",
+        "errMsg": "修改成功",
         "data": false
     };
 });
@@ -258,7 +258,7 @@ Mock.mock(new RegExp(`.*${api.risk}.*`), () => {
 Mock.mock(new RegExp(`.*${api.set_used}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "修改成功！",
+        "errMsg": "修改成功",
         "data": false
     };
 });
@@ -267,7 +267,7 @@ Mock.mock(new RegExp(`.*${api.set_used}.*`), () => {
 Mock.mock(new RegExp(`.*${api.modify_label}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "修改成功！",
+        "errMsg": "修改成功",
         "data": []
     };
 });
@@ -292,7 +292,7 @@ Mock.mock(new RegExp(`.*${api.chart}.*`), () => {
 Mock.mock(new RegExp(`.*${api.dial_list}.*`), () => {
     return {
         "code": 1,
-        "errMsg": "查询成功！",
+        "errMsg": "查询成功",
         "data": {
             "total": 12715,
             "per_page": 20,

@@ -1,72 +1,30 @@
 <template>
 
   <van-popup
-      v-model:show="detail_visible"
-      closeable
-      round
-      position="bottom"
+      v-model:show="visible"
+      :style="{ height: '70%' }"
       class="self-popup"
-      :style="{ height: '80%' }"
-  >
+      closeable
+      position="bottom"
+      round
+      @closed="customer = null">
 
-    <div class="panel-detail" v-if="loaded">
-
-      <!-- 标题 -->
-      <div class="title">{{ customer.detail.name }}</div>
-
-      <div class="detail" ref="container">
-
+    <div v-if="detail" class="detail-box">
+      <div class="title">{{ detail.name }}</div>
+      <div ref="container" class="detail">
         <van-cell-group inset>
-          <!-- 输入任意文本 -->
-          <van-field :readonly="readonly" v-model="customer.detail.name" label="姓名"/>
-          <!-- 输入手机号，调起手机号键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.mobile" label="手机号"/>
-          <!-- 输入手机号，调起手机号键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.next_dial" label="上次联系"/>
-          <!-- 输入手机号，调起手机号键盘 -->
-          <van-field :readonly="readonly" :modelValue="customer.detail.count_dial+'次'" label="通话次数"/>
-          <!-- 输入手机号，调起手机号键盘 -->
-          <van-field :readonly="readonly" :modelValue="customer.detail.duration_dial+'秒'" label="通话时长"/>
-          <!-- 允许输入正整数，调起纯数字键盘-->
-          <van-field :readonly="readonly" v-model="customer.detail.company" label="公司名称"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.bank" label="开户行"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.create" label="成立日期"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.scale" label="企业规模"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.tax" label="税号"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.area" label="地区"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.industry" label="行业"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.to_year" label="年开票"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.toTax" label="年纳税"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" :modelValue='["A", "B", "C", "D", "M"][customer.detail.level - 1]'
-                     label="税务评级"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="true" placeholder="请选择客户评级"
-                     :modelValue='!customer.detail.star?"暂无":(customer.detail.star+"星")'
-                     label="客户评级"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.sell_year" label="年销售"/>
-          <!-- 文本域自适应文字高度 -->
-          <van-field :readonly="readonly" autosize type="textarea" v-model="customer.detail.remarks" label="备注"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.assign_time" label="分配日期"/>
-          <!-- 允许输入正整数，调起纯数字键盘 -->
-          <van-field :readonly="readonly" v-model="customer.detail.datetime" label="导入日期"/>
+          <van-field v-model="detail.name" :readonly="true" label="姓名"/>
+          <van-field v-model="detail.phone" :readonly="true" label="手机号"/>
+          <van-field v-model="detail.previous" :readonly="true" label="上次联系"/>
+          <van-field :modelValue="detail.count+'次'" :readonly="true" label="通话次数"/>
+          <van-field :modelValue="detail.duration+'秒'" :readonly="true" label="通话时长"/>
+          <van-field :modelValue='status[detail.status]' :readonly="true" label="客户状态"/>
+          <van-field :modelValue='intent[detail.intent]?.label' :readonly="true" label="客户意向"/>
+          <van-field :modelValue="detail.remark" :readonly="true" autosize label="备注" type="textarea"/>
+          <van-field v-model="detail.assign_time" :readonly="true" label="分配日期"/>
+          <van-field v-model="detail.create_time" :readonly="true" label="导入日期"/>
         </van-cell-group>
-
       </div>
-    </div>
-
-    <div v-else class="skeleton">
-      <van-skeleton title :row="5"/>
     </div>
 
   </van-popup>
@@ -74,75 +32,74 @@
 </template>
 
 <script setup>
-import {inject, reactive, ref, watch} from "vue";
+import {ref, watch} from "vue";
 import api from "@/service/api";
+import load from "@/common/load";
 import axios from "axios";
-import load from "@/common/usual/load";
+import {injects} from "@/common";
 
-const detail_visible = inject('detail_visible');
-const select_detail_customer = inject('select_detail_customer');
-const loaded = ref(false); //数据是否已加载
-const customer = reactive({detail: null}); //所有标签
-const readonly = ref(true); //只读
+/* 事件 */
+const visible = ref(false);
+
+/* 状态 */
+const {
+  select_detail: customer,
+  status,
+  intent
+} = injects([
+  "select_detail",
+  "status",
+  "intent"
+]);
+
+/* 数据 */
+const detail = ref({});
+
 
 /**
  * 加载所有标签
  */
 const loadDetail = () => {
-
   try {
+    load.loading('加载中...');
     /* 开始请求 */
-    axios.get(api.detail + "?id=" + select_detail_customer.data.id)
+    axios.get(`${api.custs.detail}?id=${customer.value.id}`)
         .then((res) => {
-          /*
-          * 判断请求结果
-          * */
           if (res.data.code) {
-            customer.detail = res.data.data;
+            detail.value = res.data.data;
+            visible.value = true;
           } else {
-            /* 弹出错误原因 */
-            load.error(res.data.errMsg);
+            load.toast(res.data.errMsg);
           }
         }).catch((e) => {
-      /* 弹出错误原因 */
-      load.error(e.message);
+      load.toast(e.message);
     }).finally(() => {
-      /* 关闭加载效果 */
-      load.loaded();
-      loaded.value = true;
+      load.loaded(0, true);
     });
-
   } catch (e) {
     console.log(e)
-    load.error(e);
+    load.toast(e);
   }
 }
 
-
-/*
-* 检测
-* */
-watch(() => detail_visible, () => {
-  if (detail_visible.value) {
-    loaded.value = false;
-    loadDetail(); //加载用户数据
+/* 监听 */
+watch(() => customer.value, () => {
+  if (customer.value) {
+    loadDetail();
   }
-}, {
-  deep: true
-})
-
-
+});
 </script>
 
 <style lang="scss" scoped>
 
 
-.panel-detail {
+.detail-box {
   display: flex;
   flex-direction: column;
   padding: 10px 0;
   height: 100%;
   overflow: hidden;
+  box-sizing: border-box;
 
   .title {
     width: 100%;
@@ -150,7 +107,7 @@ watch(() => detail_visible, () => {
     @include flex-center;
     color: $sm-color;
     font-size: $font-size-1;
-    padding-bottom: 10px;
+    padding: 6px 0 12px;
   }
 
 

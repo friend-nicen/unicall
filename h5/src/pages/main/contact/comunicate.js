@@ -1,24 +1,20 @@
+/* eslint-disable */
 /*
 * @author 友人a丶
 * @date 
 * 
 * */
 
-import load from "@/common/usual/load";
-import {getState} from "@/common/html5plus/monitor";
-import init_copy from "@/common/usual/copy";
-import readRecord from "@/common/html5plus/read-record";
+import load from "@/common/load";
+import {getState, handle} from "@/plus/monitor";
+import read from "@/plus/read";
 import dayjs from "dayjs";
-import {sleep} from "@/common/usual/common";
+import {sleep} from "@/common";
 import axios from "axios";
 import api from "@/service/api";
 import {provide} from "vue";
-import user from "@/stores/user";
 
 export default function () {
-
-
-    const userInfo = user();
 
     /* 显示弹出 */
     const showNotify = (text) => {
@@ -31,152 +27,48 @@ export default function () {
         })
     }
 
-    /* 复制号码 */
-    const {
-        text,
-        copy_dom,
-        copy
-    } = init_copy();
-
+    /* 正在拨号 */
+    let dialing = false;
 
     /**
-     * 跳转其他应用
-     * @param mobile
+     * 拨号
+     * @param cust
+     * @return {Promise<void>}
      */
-    const openApp = (mobile) => {
-        /* 复制指定的数据并跳转 */
-        copy(mobile).then(() => {
-            plus.runtime.openURL("wxwork://");
-        })
-    };
+    const call = async (cust) => {
 
-    /*
-    * 获取通讯录对象
-    * */
-    let book = null; //通讯录对象
-    const getBook = async () => {
-
-        /* 返回 */
-        if (book === false) {
-            return false;
-        }
-
-        /* 返回 */
-        if (book) {
-            return book;
-        }
-
-        return await new Promise(resolve => {
-            // 扩展API加载完毕，现在可以正常调用扩展API
-            plus.contacts.getAddressBook(plus.contacts.ADDRESSBOOK_PHONE, function (addressbook) {
-                book = addressbook;
-                resolve(addressbook)
-            }, function () {
-                book = false;
-                resolve(false)
-            });
-        })
-    }
-
-
-    /*
-    * 拨打电话
-    * */
-
-    let dialing = false; //正在拨号
-
-
-    /**
-     * 风险检测
-     * @param mobile
-     * @returns {Promise<unknown>|boolean}
-     */
-    const risk = (mobile) => {
-
-        /* 延时 */
-        load.loading("加载中...");
-
-        try {
-
-            /* 开始请求 */
-            return axios.post(api.risk, {
-                to: mobile
-            })
-                .then((res) => {
-                    if (res.data.code) {
-                        return false;
-                    } else {
-                        load.error(res.data.errMsg);
-                        return true;
-                    }
-                }).catch((e) => {
-                    load.error(e.message);
-                    return true;
-                }).finally(() => {
-                    load.loaded();
-                });
-
-        } catch (e) {
-            console.log(e)
-            load.error(e);
-            return true;
-        }
-
-    }
-
-    const dial = async (user, appendBook = true) => {
-
-
-        if (!/^\d+$/.test(user.mobile)) {
-            load.toast_error("号码异常");
+        if (!/^\d+$/.test(cust.phone)) {
+            load.toast("号码异常");
             return;
         }
-
 
         /* 防止多次触发 */
         if (dialing) {
-            load.info("通话正在进行，请稍后...")
+            load.toast("通话正在进行，请稍后...")
             return;
         } else {
-            dialing = true; //标记正在拨号
+            dialing = true;
         }
 
-        /* 设置了本机号码 */
-        if (userInfo.basic.used && await risk(user.mobile)) {
-            dialing = false; //标记正在拨号
-            return false;
-        }
-
-
-        /* 追加到通讯录 */
-        if (appendBook) {
-
-            const book = await getBook(); //获取通讯录
-
-            /* 追加到通讯录 */
-            if (book) {
-                const contact = book.create();
-                contact.name = {givenName: `${user.name}-${user.company}`};
-                contact.phoneNumbers = [{type: "手机", value: user.mobile, preferred: true}];
-                contact.save();
-            }
-        }
 
         /* 提交通话记录 */
         try {
 
-            plus.device.dial(user.mobile, false);//激活拨号
+            /* 触发拨号 */
+            plus.device.dial(cust.phone, false);
 
-            const start = dayjs(); //记录开始时间
+            /* 记录开始时间 */
+            const start = dayjs();
 
-            let count = 0; //60s内未开始自动结束
+            /* 60s内未开始自动结束 */
+            let count = 0;
 
             /* eslint-disable-next-line */
             while (true) {
 
                 /* 容错判断 */
                 if (count > 25) {
-                    dialing = false; //标记拨号结束
+                    dialing = false;
                     return;
                 }
 
@@ -192,102 +84,133 @@ export default function () {
 
             /* eslint-disable-next-line */
             while (true) {
-                /* 通话结束 */
+
+                /* 判断通话状态 */
                 if (getState() === 0) {
 
-                    let record = await readRecord({
-                        callTime: start.valueOf()
-                    }); //通话记录
-
-
                     /* 如果读取失败 */
-                    let error = 0;
+                    let error = 0, record = [];
 
-                    while (record.length === 0) {
+                    /* eslint-disable-next-line */
+                    while (true) {
 
-                        await sleep(200); //休眠
+                        /* 读取通话记录 */
+                        record = read.record({
+                            callTime: start.valueOf()
+                        });
 
-                        error++; //错误加一
+                        /* 存在记录 */
+                        if (record.length !== 0) {
+                            break;
+                        }
+
+                        /* 等待 */
+                        await sleep(200);
+
+                        /* 错误加一 */
+                        error++;
 
                         if (error > 10) {
-                            dialing = false; //标记拨号结束
-                            load.error("未检测到本次通话产生的记录，可能是通话并未开始！")
+                            dialing = false;
+                            showNotify("未检测到本次通话产生的记录")
                             return;
                         }
 
-                        record = await readRecord({
-                            callTime: start.valueOf()
-                        }); //通话记录
                     }
 
+                    /* 处理 */
+                    load.loading('上传中...');
 
-                    await axios.post(
-                        api.add_record,
-                        Object.assign(record[0], {
-                            customer: user.id
-                        })).then((res) => {
-                        /*
-                         * 判断请求结果
-                         * */
-                        if (res.data.code) {
-                            showNotify("本次通话记录已自动上传..."); //弹出提醒
+                    /* 判断网络状态 */
+                    /* eslint-disable-next-line */
+                    while (true) {
+                        if (plus.networkinfo.getCurrentType() !== plus.networkinfo.CONNECTION_NONE) {
+                            break;
                         } else {
-                            /* 弹出错误原因 */
-                            load.error(res.data.errMsg);
+                            await sleep(200)
                         }
+                    }
 
-                    }).catch((e) => {
-                        /* 弹出错误原因 */
-                        load.error(e.message);
-                    }).finally(() => {
-                        user.dial++;
-                    })
+                    /* 上传通话记录 */
+                    await axios.post(
+                        api.dial.add,
+                        Object.assign(record[0], {
+                            id: cust.id,
+                            start_time: start.format('YYYY-MM-DD HH:mm:ss')
+                        }))
+                        .then((res) => {
+                            /* 记录 */
+                            cust.last_call = start.format('YYYY-MM-DD HH:mm:ss');
+                            /* 判断请求结果 */
+                            if (res.data.code) {
+                                /* 弹出提示 */
+                                showNotify("本次通话记录已自动上传...");
+                                /* 处理文件 */
+                                handle(start.unix(), {
+                                    id: res.data.data
+                                })
+                                    .then(res => {
+                                        if (!res.code) {
+                                            load.toast(res.msg);
+                                        } else {
+                                            showNotify("本次通话录音已自动上传...");
+                                        }
+                                    }).catch(e => {
+                                    load.toast(e.message);
+                                }).finally(() => {
+                                    load.loaded();
+                                })
+                            } else {
+                                load.toast(res.data.errMsg);
+                            }
+                        }).catch((e) => {
+                            /* 弹出错误原因 */
+                            load.toast(e.message);
+                        }).finally(() => {
+                            cust.dial++;
+                        })
 
 
                     /* 结束 */
-                    dialing = false; //标记拨号结束
+                    dialing = false;
                     return;
                 }
+
+                /* 持续等待 */
                 await sleep(200);
             }
 
         } catch (e) {
             console.log(e);
-            dialing = false; //标记拨号结束
-            load.error(e);
+            dialing = false;
+            load.toast(e);
         }
 
     };
 
 
     /* 注入方法 */
-    provide('dialPhone', dial);
+    provide('call', call);
 
-    /*
-    * 发送短信
-    * */
+    /* 发送短信 */
     const sendMessage = (mobile) => {
 
         if (!/^\d+$/.test(mobile)) {
-            load.toast_error("号码异常");
+            load.toast("号码异常");
             return;
         }
 
         /* 消息对象 */
         const msg = plus.messaging.createMessage(plus.messaging.TYPE_SMS);
 
-        msg.to = [mobile];//收件人
+        msg.to = [mobile];
         plus.messaging.sendMessage(msg);
     };
 
-
     return {
-        copy_dom,
-        openApp,
-        text,
-        dial,
-        showNotify,
-        sendMessage
+        sendMessage,
+        call,
+        showNotify
     }
 
 }

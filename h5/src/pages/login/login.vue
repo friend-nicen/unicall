@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="header">
-      <img :src="header" alt="bg"/>
+      <img :src="$images.header" alt="bg"/>
     </div>
     <div class="main">
       <div class="main-item">
@@ -22,7 +22,6 @@
 </template>
 
 <script setup>
-import header from "@/assets/login/header.png"
 import init from './login'
 
 const {login, mobile, password} = init();
@@ -31,7 +30,6 @@ const {login, mobile, password} = init();
 
 <style lang="scss" scoped>
 /* 整个容器的样式 */
-
 .flex {
   display: flex;
   justify-content: center;
@@ -39,14 +37,12 @@ const {login, mobile, password} = init();
   align-content: center;
 }
 
-
 .container {
 
   background-color: white;
   width: 100%;
   height: 100%;
   padding: 0;
-
 
   /* 顶部的背景图片 */
   .header {
@@ -77,9 +73,9 @@ const {login, mobile, password} = init();
         @extend .flex;
         top: 0;
         height: 100%;
-        left: 50px;
+        left: 60px;
         color: #84b7ff;
-        font-size: 18px;
+        font-size: 16px;
         z-index: 21;
       }
 
@@ -89,7 +85,7 @@ const {login, mobile, password} = init();
         height: 50px;
         box-sizing: border-box;
         border: #84b7ff 1px solid;
-        padding-left: 40px;
+        padding-left: 50px;
         padding-right: 40px;
         border-radius: 30px;
         background-color: rgb(232, 240, 254);

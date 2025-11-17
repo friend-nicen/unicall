@@ -1,40 +1,40 @@
-import load from "@/common/usual/load";
+import load from "@/common/load";
 import {login as toLogin} from "@/service/requests";
 import {router} from "@/router";
 import config from "@/config";
 import {useLocalStorage} from "@vueuse/core";
-import user from "@/stores/user";
+import _user from "@/stores/user";
 
-/*
-* @ 封装登录相关的方法
-* */
+/**
+ * 封装登录相关的方法
+ **/
 export default function () {
 
     const mobile = useLocalStorage("mobile", null);//账号
     const password = useLocalStorage("password", null)//密码
-    const userInfo = user();//用户信息
+    const user = _user();//用户信息
 
-    /*验证登录是否仍然有效*/
+    /* 验证登录是否仍然有效 */
     const login = async function () {
 
-        /*去除空格*/
+        /* 去除空格 */
         mobile.value = mobile.value.trim()
         password.value = password.value.trim()
 
 
-        /*验证表单*/
-        if (mobile.value.length == 0) {
-            load.error("手机号不能为空！");
+        /* 验证表单 */
+        if (mobile.value.length === 0) {
+
+            load.toast("手机号不能为空");
             return;
         }
 
-        if (password.value.length == 0) {
-            load.error("密码不能为空！")
+        if (password.value.length === 0) {
+            load.toast("密码不能为空")
             return
         }
 
-
-        load.loading("登录中..."); //显示登录效果
+        load.loading("登录中...");
 
         const res = await toLogin({
             username: mobile.value,
@@ -42,19 +42,19 @@ export default function () {
         });
 
 
-        /*判断登录结果*/
+        /* 判断登录结果 */
         if (res.code) {
 
+            /* 保存用户状态 */
+            user.save(res.data);
 
-            userInfo.save(res.data); //保存用户状态
-            router.replace(config.index); //跳转首页
-
-
+            /* 跳转首页 */
+            router.replace(config.index);
         } else {
-            load.error(res.errMsg)
+            load.toast(res.errMsg)
         }
 
-        load.loaded();//隐藏加载
+        load.loaded();
 
     }
 

@@ -3,6 +3,7 @@ import {createRouter, createWebHashHistory} from "vue-router"
 import config from "@/config";
 import MainLayout from '@/layouts/main-layout.vue'
 import {getChildrens} from '@/router/common'
+import browser from "@/pages/browser";
 
 const children = getChildrens();
 
@@ -24,6 +25,15 @@ const basic = [
             cache_1: 'login'
         },
         component: () => import("@/pages/login"),
+    },
+    {
+        path: "/browser",
+        meta: {
+            role: false,
+            name: "浏览器",
+            cache_1: 'browser'
+        },
+        component: browser
     },
     {
         path: '/403',

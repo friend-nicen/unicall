@@ -24,7 +24,7 @@ export default function (obj = {}) {
             path: 'chart',
             meta: Object.assign({
                 role: false,
-                icon: 'records',
+                icon: 'bar-chart-o',
                 name: "统计",
                 cache_2: 'chart'
             }, obj),

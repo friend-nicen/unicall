@@ -21,10 +21,8 @@
 </template>
 
 <script setup>
-import system from "@/stores/system";
-
-const height = system.init_height + "px";
-
+import sys from "@/stores/sys";
+const height = sys.height + "px";
 console.log("主框架初始化...");
 </script>
 

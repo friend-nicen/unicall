@@ -4,11 +4,17 @@ import vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite';
 import {VantResolver} from 'unplugin-vue-components/resolvers';
 import vueSetupExtend from 'vite-plugin-vue-setup-extend'
-import AutoImport from 'unplugin-auto-import/vite'
-import rollup from './rollup'
 import viteCompression from 'vite-plugin-compression';
 import autoprefixer from 'autoprefixer'
 import eslint from 'vite-plugin-eslint'
+import legacy from '@vitejs/plugin-legacy';
+import {minify} from 'html-minifier-terser';
+import createAuto from "./vite/auto";
+
+
+/* 判断环境 */
+// eslint-disable-next-line no-undef
+const dev = process.env.NODE_ENV === 'development';
 
 export default defineConfig({
     plugins: [
@@ -22,35 +28,48 @@ export default defineConfig({
                 VantResolver()
             ],
         }),
+        legacy({
+            targets: ['defaults', 'not IE 11'],
+        }),
+        {
+            name: 'minify-html',
+            transformIndexHtml(html) {
+                return minify(html, {
+                    collapseWhitespace: true,
+                    removeComments: true,
+                });
+            },
+        },
         viteCompression(),
         vueSetupExtend(),
-        AutoImport(
-            {
-                imports: ['vue', 'pinia', 'vue-router'], //需要自动引入的包
-                dts: './auto.js',//生成文件路径
-                vueTemplate: true, //Auto import inside Vue template,
-            }
-        ),
+        createAuto({
+            image: 'src/assets',
+            output: 'src/config/images.js',
+            prefix: '@/',
+            type: ['.jpg', '.svg', '.png']
+        })
     ],
+    esbuild: {
+        drop: !dev ? ['console', 'debugger'] : []
+    },
     build: {
         sourcemap: true,
-        minify: "terser",
+        minify: false,
         cssTarget: "chrome61",
         outDir: "dist",
-        rollupOptions: rollup,
-        terserOptions: {
-            compress: {
-                drop_console: true, //去掉所有console
-                drop_debugger: true//去掉所有debugger
+        rollupOptions: {
+            output: {
+                chunkFileNames: 'app/js/[hash].js',
+                entryFileNames: 'app/js/[hash].js',
+                assetFileNames: 'app/[ext]/[hash].[ext]',
             }
-        },
+        }
     },
     css: {
         preprocessorOptions: {
             scss: {
                 additionalData: `  
                      @import "@/theme/theme.scss";
-                     @import "@/theme/iconfont.scss"; 
                  `
             }
         },
@@ -65,6 +84,14 @@ export default defineConfig({
         port: 8081,
         hmr: {
             path: "/ws"
+        },
+        proxy: {
+            '/api': {
+                target: 'https://call.nicen.cn',
+                changeOrigin: true,
+                secure: false,
+                rewrite: (path) => path.replace(/^\/api/, ''),
+            },
         }
     },
     resolve: {

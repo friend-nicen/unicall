@@ -1,15 +1,12 @@
 <template>
   <div class="main">
     <div class="header-bg">
-
       <div class="user">
         <!-- 用户同意授权，改为获取到的数据 -->
-        <img :src="api.avatar+userInfo.basic.nickname"/>
+        <img :src="$api.avatar+$user.nickname"/>
         <div class="right">
           <div class="top">
-
-            <span>{{ userInfo.basic.nickname }}</span>
-
+            <span>{{ $user.nickname }}</span>
           </div>
           <div class="bottom">
             {{ welcome() }}
@@ -23,21 +20,14 @@
           <van-icon class-prefix="icon" name="wode" size="20"/>
           <span class="left">手机号</span>
         </div>
-        <span class="right">{{ userInfo.basic.username }}</span>
-      </div>
-      <div class="item" @click="popup">
-        <div class="flex">
-          <van-icon name="phone-o" size="16"/>
-          <span class="left">本机号码</span>
-        </div>
-        <span class="right">{{ userInfo.basic.used }}</span>
+        <span class="right">{{ $user.username }}</span>
       </div>
       <div class="item">
         <div class="flex">
           <van-icon class-prefix="icon" name="wode" size="20"/>
           <span class="left">所属部门</span>
         </div>
-        <span class="right">{{ userInfo.basic.depart.name }}</span>
+        <span class="right">{{ $user.depart.name }}</span>
       </div>
       <div class="item" @click="quitSystem">
         <div class="flex">
@@ -48,47 +38,16 @@
       </div>
     </div>
 
-
     <div class="footer">电销助手</div>
+
   </div>
 
-  <!-- 输入验证码 -->
-  <van-dialog :closeOnClickOverlay="false" v-model:show="show" :show-confirm-button="false" width="80vw">
-    <div class="popup-code">
-
-      <van-icon name="cross" @click="show = false" size="21px" class="close"/>
-
-      <div class="code-title">
-        本机号码
-      </div>
-      <div class="box-input">
-        <input v-model="mobile" class="input" placeholder="请输入本机号码"/>
-      </div>
-      <button @click="set" class="code-button">
-        提交
-      </button>
-    </div>
-  </van-dialog>
 
 </template>
 
 <script setup>
 
-import api from '@/service/api'
-import user from '@/stores/user'
-import initused from './used'
 import quitSystem from '@/service/quit-system'
-
-const userInfo = user(); //用户信息
-
-/* 设置本机号码 */
-const {
-  set,
-  popup,
-  show,
-  mobile
-} = initused();
-
 
 /* 提示 */
 const welcome = () => {
@@ -125,7 +84,7 @@ const welcome = () => {
   position: relative;
   top: -10px;
   height: 40vh;
-  background-image: url("@/assets/images/header.svg");
+  background-image: url("@/assets/images/back_image.svg");
   padding: 10px;
   display: flex;
   flex-wrap: wrap;
