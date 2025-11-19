@@ -1,0 +1,11 @@
+{
+  "name": "ban",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "A Node.js server with Hono.js and WebSocket support",
+  "devDependencies": {
+    "@hono/node-server": "^1.13.8",
+    "hono": "^4.7.4",
+    "ws": "^8.18.1"
+  }
+}
