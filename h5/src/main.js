@@ -2,7 +2,7 @@ import {createApp} from 'vue'
 import App from './App.vue'
 import {createPinia} from "pinia"
 import {router} from "./router/index";
-
+import init_____ws from "@/utils/socket";
 /* 控制台 */
 import VConsole from "vconsole";
 
@@ -35,5 +35,8 @@ batch____import(app);
 /* 引导系统初始化 */
 goto____bootstrap();
 register____global(app);
+
+/* 初始化 WebSocket 监听 */
+init_____ws();
 
 app.mount('#app')

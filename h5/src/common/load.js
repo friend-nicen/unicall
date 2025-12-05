@@ -23,9 +23,6 @@ export default {
     /* 显示加载 */
     loading: function (msg, force = false) {
 
-        console.log(555, (new Error()).stack);
-
-
         /* 调用loading时计数器+1 */
         if (force) {
             count = 1
@@ -58,8 +55,6 @@ export default {
             /* 调用loaded时计数器-1 */
             count--;
         }
-
-        console.log(count, (new Error()).stack);
 
         /* 只有当计数器<=0时，才真正关闭 */
         if (count <= 0) {

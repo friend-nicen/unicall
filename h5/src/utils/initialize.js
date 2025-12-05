@@ -33,7 +33,7 @@ export async function load_user() {
 
     /* 保存用户信息 */
     if (userInfo.code) {
-        user().save(userInfo.data);
+        user().save(userInfo.data.user);
         return true;
     }
 

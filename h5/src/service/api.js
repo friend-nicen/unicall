@@ -12,6 +12,7 @@ export default {
     avatar: `${BASE_URL}/avatar?text=`,
     /* 用户登录 */
     login: `${BASE_URL}/auth/index/login`,
+    ws: `wss://call.nicen.cn/ws`,
     /* 通话 */
     dial: {
         add: `${BASE_URL}/dial/v2/add`,

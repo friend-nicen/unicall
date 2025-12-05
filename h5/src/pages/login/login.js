@@ -46,8 +46,7 @@ export default function () {
         if (res.code) {
 
             /* 保存用户状态 */
-            user.save(res.data);
-
+            user.save(res.data.user);
             /* 跳转首页 */
             router.replace(config.index);
         } else {
