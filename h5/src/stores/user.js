@@ -25,6 +25,9 @@ export default defineStore('userInfo', {
                 id: null,
                 name: null
             },
+            corp: {
+                id: null
+            },
             permissions: [],
             depart: {
                 name: null,

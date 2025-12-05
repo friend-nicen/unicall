@@ -36,6 +36,7 @@ const {
   justify-content: space-between;
   background-color: white;
   border-bottom: solid $border-color 1px;
+  z-index: 9999;
 
   .filter {
     position: absolute;

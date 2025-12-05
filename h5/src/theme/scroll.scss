@@ -1,0 +1,49 @@
+/* 滚动条美化 */
+@mixin scroll-bar( $height:10px, $width:10px, $color:#e1e1e1, $hover:rgba(0, 0, 0, 0.5)) {
+
+  @supports not selector(::-webkit-scrollbar) {
+    /*火狐浏览器滚动条样式*/
+    & {
+      /* scrollbar-color: light !important; 第一个颜色为滚动条的颜色， 第二个颜色为滚动条轨道的颜色 */
+      scrollbar-width: thin !important; /* 设置比默认滚动条宽度更窄的宽度 */
+    }
+  }
+
+  /* 滚动条样式 */
+  &::-webkit-scrollbar {
+    -webkit-appearance: none;
+    background: transparent;
+    width: $width !important;
+    height: $height !important;
+  }
+
+  &:hover::-webkit-scrollbar-thumb {
+    display: block;
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $color;
+    border-radius: 4px;
+    border-style: solid;
+    border-color: transparent;
+    border-width: 2px;
+    background-clip: padding-box;
+
+    &:hover {
+      background-color: $hover;
+    }
+  }
+
+
+}
+
+
+/* 文字超出隐藏 */
+@mixin overflow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

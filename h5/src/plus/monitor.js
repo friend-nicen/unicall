@@ -1,8 +1,8 @@
 /* eslint-disable */
 import api from "@/service/api";
-import user from "@/stores/user";
+import _user from "@/stores/user";
 import invoke from "@/utils/bridge";
-import dayjs from "dayjs";
+import {report} from "@/service/requests";
 
 /*
 * 通话录音监控和上传模块
@@ -22,66 +22,10 @@ import dayjs from "dayjs";
 
 /**
  * 根据不同手机品牌获取录音文件存储目录
- * 不同厂商的Android系统录音存储路径各不相同
- * 支持小米、华为、荣耀、魅族、OPPO、vivo、三星等主流品牌
- * @returns {string} 录音文件存储的完整路径
  */
 export function getRecordPath() {
-    /* 获取设备厂商信息并转为小写 */
-    const type = plus.device.vendor.toLowerCase();
-    /* 根据不同手机品牌设置对应的录音存储路径 */
-    switch (type) {
-        case "xiaomi":
-            /* 小米手机MIUI系统录音路径 */
-            return '/MIUI/sound_recorder/call_rec/';
-        case "huawei":
-            /* 华为手机录音路径 */
-            return "/Sounds/CallRecord/";
-        case "honor":
-            /* 荣耀手机录音路径 */
-            return "/Sounds/CallRecord/";
-        case "nova":
-            /* 华为Nova系列录音路径 */
-            return "/Sounds/CallRecord/";
-        case "meizu":
-            /* 魅族手机录音路径 */
-            return "/Recorder/";
-        case "oppo":
-            /* OPPO手机录音路径 */
-            return "/Music/Recordings/Call Recordings/";
-        case "vivo":
-            /* vivo手机录音路径 */
-            return "/Record/Call/";
-        case "samsung":
-            /* 三星手机录音路径 */
-            return "/Sounds/";
-        case "oneplus":
-            /* 一加手机录音路径 */
-            return "/Music/Recordings/Call Recordings/";
-        case "redmi":
-            /* 红米手机录音路径 */
-            return '/MIUI/sound_recorder/call_rec/';
-        case "sony":
-            /* 索尼手机录音路径 */
-            return "/Music/PCMRecordings/";
-        case "google":
-            /* 谷歌Pixel手机录音路径 */
-            return "/VoiceRecorder/";
-        case "asus":
-            /* 华硕手机录音路径 */
-            return "/Recorder/Recordings/";
-        case "lg":
-            /* LG手机录音路径 */
-            return "/VoiceRecorder/";
-        case "realme":
-            /* realme手机录音路径 */
-            return "/Music/Recordings/Call Recordings/";
-        default:
-            /* 对于未列出的机型，使用通用录音存储路径 */
-            return "/Recordings/";
-    }
+    return window.____brand[plus.device.vendor.toLowerCase()] || '/Recordings/';
 }
-
 
 /**
  * 上传录音文件到服务器
@@ -93,7 +37,7 @@ export function getRecordPath() {
 function upload(file, param) {
 
     /* 获取当前用户信息 */
-    const userInfo = user();
+    const user = _user();
 
     return new Promise(((resolve, reject) => {
 
@@ -106,20 +50,30 @@ function upload(file, param) {
             },
             (ob, status) => {
                 try {
+                    /* 上报 */
+                    report(`录音上传：${ob.responseText}，status：${status}，file：${file}`);
                     /* 判断结果 */
                     if (status === 200) {
-                        resolve((JSON.parse(ob)).code);
+
+                        /* 响应结果 */
+                        const data = JSON.parse(ob.responseText);
+
+                        if (data.code) {
+                            resolve(true);
+                        } else {
+                            reject("上传失败：" + data.errMsg);
+                        }
                     } else {
-                        reject("上传失败，请求异常：" + status);
+                        reject("上传失败：" + status);
                     }
                 } catch (e) {
-                    reject("上传失败，请求异常：" + status);
+                    reject("上传失败：" + status);
                 }
             }
         );
 
         /* 添加要上传的文件，使用file://协议 */
-        task.addFile("file://" + file, {
+        task.addFile(`file://${file}`, {
             key: "audio",
             timeout: 120,
             retry: 2,
@@ -127,7 +81,7 @@ function upload(file, param) {
         });
 
         /* 设置用户认证token到请求头 */
-        task.setRequestHeader("authorization", userInfo.token[0]);
+        task.setRequestHeader("authorization", Array.isArray(user.token) ? user.token[0] : user.token);
 
         /* 开始执行上传任务 */
         task.start();
@@ -164,24 +118,23 @@ export async function handle(callTime, param) {
         })
 
         /* 开始上传录音文件 */
-        const result = await upload(last_audio, param);
+        await upload(last_audio, param);
 
         /* 删除原文件，防止卡顿 */
-        if (result.status === 1) {
-            await invoke({
-                action: 'unlink',
-                data: audio.file
-            })
-        }
+        await invoke({
+            action: 'unlink',
+            data: audio.file
+        })
 
         return {
             code: 1
         }
 
     } catch (e) {
+        console.log(e);
         return {
             code: 0,
-            msg: e.message
+            msg: e
         };
     }
 }
@@ -212,8 +165,6 @@ export function getState() {
         /* 通话管理器 */
         teleManager = plus.android.runtimeMainActivity().getSystemService(Context.TELEPHONY_SERVICE);
     }
-
-    console.log(teleManager);
 
     /* 返回当前通话状态 */
     return teleManager.getCallState();

@@ -8,7 +8,6 @@
       <v-nav-bar/>
     </div>
 
-
     <!--  可滚动视图区  -->
     <div class="view">
       <router-view v-slot="{Component}">
@@ -17,6 +16,8 @@
         </keep-alive>
       </router-view>
     </div>
+
+
   </div>
 </template>
 
@@ -51,7 +52,7 @@ console.log("主框架初始化...");
   }
 
   .view {
-    overflow: auto;
+    overflow-y: auto;
     transform: scale(1);
     height: 100%;
   }

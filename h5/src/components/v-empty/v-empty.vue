@@ -1,15 +1,19 @@
 <template>
   <view class="empty">
-    <image class="image" src="./empty.svg" mode="widthFix"></image>
-    <text class="info">暂无数据</text>
+    <img class="image" src="./v-empty.svg"/>
+    <text class="info">{{ desc }}</text>
   </view>
 </template>
 
 <script setup>
 defineProps({
   height: {
-    default: "60vh",
+    default: "300px",
     required: false
+  },
+  desc: {
+    required: false,
+    default: "暂无数据"
   }
 })
 </script>
@@ -25,6 +29,7 @@ defineProps({
   margin: 0;
 
   .image {
+    height: 100px;
     max-width: 25vw;
   }
 

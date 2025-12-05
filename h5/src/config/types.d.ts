@@ -4,6 +4,7 @@ declare module "@vue/runtime-core" {
         $images: { 
  			avatar : string,
 			back_image : string,
+			bohao : string,
 			qcc : string,
 			shipin : string,
 			tian : string,

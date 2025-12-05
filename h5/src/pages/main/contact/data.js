@@ -9,6 +9,7 @@ export default function () {
     const labels = ref([]);
     const status = ref([]);
     const intent = ref([]);
+    const created = ref(false);
 
     provides({
         labels,
@@ -22,12 +23,15 @@ export default function () {
             get_contents(api.data.intent, intent, 'value'),
             get_contents(api.data.labels, labels, 'value'),
             get_contents(`${api.data.status}?return=array`, status, 'value')
-        ])
+        ]).finally(() => {
+            created.value = true;
+        })
     });
 
     return {
         labels,
         status,
-        intent
+        intent,
+        created
     }
 }

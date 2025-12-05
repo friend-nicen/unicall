@@ -5,109 +5,134 @@
     <!-- 筛选条件 -->
     <v-condition/>
 
-    <ul v-if="data.length > 0" class="customers">
+    <van-pull-refresh v-model="refreshing" :animation-duration="300" @refresh="refresh">
+      <template v-if="data.length > 0">
+        <van-list
+            v-model:loading="loading"
+            :finished="finish"
+            finished-text="没有更多了"
+            @load="loadData"
+        >
+          <ul v-if="data.length > 0" class="customers">
+            <template v-for="(item) of data" :key="item.id">
+              <li class="item">
+                <div class="step1">
 
-      <template v-for="(item,index) of data" :key="index">
-        <li class="item">
-          <div class="step1">
+                  <div class="left">
+                    <img :src="`${api.avatar}${item.name}`" alt="头像" class="avatar">
+                    <span class="name">{{ item.name }}</span>
+                    <div v-if="!item.cid" class="add-customer">
+                      <van-button class="add-btn" hairline plain round size="mini" type="primary"
+                                  @click.stop="addCustomer(item)">
+                        <van-icon name="plus"/>
+                        添加
+                      </van-button>
+                    </div>
+                  </div>
 
-            <div class="left">
-              <img :src="`${api.avatar}${item.name}`" alt="头像" class="avatar">
-              <span class="name">{{ item.name }}</span>
-            </div>
+                  <v-tag :color="item.status">
+                    {{ item.status ? '已接通' : "未接听" }}
+                  </v-tag>
 
-            <v-tag :color="item.status">
-              {{ item.status ? '已接通' : "未接听" }}
-            </v-tag>
-
-          </div>
-
-
-          <div class="step2">
-
-            <div class="left">
-              <div class="mobile">
-                手机号：{{ !item.phone ? "无" : item.phone }}
-              </div>
-              <div class="name">
-                归属地：{{ !item.place ? "未知" : item.place }}
-              </div>
-              <div class="name">
-                呼出时间：{{ !item.call_time ? "无" : item.call_time }}
-              </div>
-            </div>
-
-            <div class="all">
-              <div :class="{dialed:item.dial > 0}" class="right" @click.stop="call(item)">
-                <van-icon name="phone-o"/>
-              </div>
-            </div>
+                </div>
 
 
-          </div>
+                <div class="step2">
+
+                  <div class="left">
+                    <div class="mobile">
+                      手机号：{{ !item.phone ? "无" : item.phone }}
+                    </div>
+                    <div class="name">
+                      归属地：{{ !item.place ? "未知" : item.place }}
+                    </div>
+                    <div class="name">
+                      呼出时间：{{ !item.call_time ? "无" : item.call_time }}
+                    </div>
+                  </div>
+
+                  <div class="all">
+                    <div class="right" @click.stop="call(item)">
+                      <van-icon name="phone-o"/>
+                    </div>
+                  </div>
 
 
-          <!-- 音频播放器 -->
-          <div v-if="item.audio" class="audio-player">
-            <div class="player-controls">
-              <div class="play-btn" @click.stop="togglePlay(item, index)">
-                <van-icon :name="isPlaying(index) ? 'pause-circle-o' : 'play-circle-o'"/>
-              </div>
-              <div class="progress-bar">
-                <div class="progress" :style="{width: getProgress(index) + '%'}"></div>
-              </div>
-              <div class="time-remaining">
-                {{ isPlaying(index) ? formatTime(getRemainingTime(index)) : formatTime(item.duration) }}
-              </div>
-            </div>
-          </div>
+                </div>
 
 
-        </li>
+                <!-- 音频播放器 -->
+                <div v-if="item.audio" class="audio-player">
+                  <div class="player-controls">
+                    <div class="play-btn" @click.stop="togglePlay(item)">
+                      <van-icon :name="item.playing ? 'pause-circle-o' : 'play-circle-o'"/>
+                    </div>
+                    <div class="progress-bar">
+                      <div :style="{width: getProgress(item) + '%'}" class="progress"></div>
+                    </div>
+                    <div class="time-remaining">
+                      {{ item.playing ? formatTime(getRemainingTime(item)) : formatTime(item.duration) }}
+                    </div>
+                  </div>
+                </div>
+
+
+              </li>
+            </template>
+          </ul>
+        </van-list>
       </template>
-
-      <!--   加载状态   -->
-      <v-load/>
-    </ul>
-
-    <van-empty v-else description="暂无数据">
-      <van-button class="bottom-button" plain round size="small" type="primary" @click.stop="loadData">重新加载
-      </van-button>
-    </van-empty>
+      <template v-else>
+        <van-empty description="暂无数据">
+          <van-button class="bottom-button" plain round size="small" type="primary" @click.stop="loadData">
+            重新加载
+          </van-button>
+        </van-empty>
+      </template>
+    </van-pull-refresh>
   </div>
 
   <div v-else class="skeleton">
-    <van-skeleton :row="20" title/>
+    <van-loading size="24px"></van-loading>
   </div>
+
 
 </template>
 
 <script setup>
 import init from './dial'
 import VCondition from "./v-condition";
-import VLoad from "./v-load";
 import api from '@/service/api'
 import init_comuni from "./comunicate";
-import init_audio from './audio';
+import init_audio from '@/common/audio';
+import init_height from "./height";
+import init_add from "./add";
 
 const {
   loaded,
   loadData,
-  data
+  data,
+  loading,
+  refreshing,
+  refresh,
+  finish
 } = init();
 
 
 const {
   call
-} = init_comuni(loadData);
+} = init_comuni();
 
 const {
   togglePlay,
-  isPlaying,
   getProgress,
   getRemainingTime,
   formatTime
-} = init_audio();
+} = init_audio(data);
+
+const height = init_height();
+
+const {addCustomer} = init_add();
 
 </script>
 
@@ -121,8 +146,8 @@ const {
   .customers {
 
     list-style: none;
-    padding: 8px 10px 16px;
-
+    padding: 12px 10px 16px;
+    min-height: v-bind(height);
 
     .item {
 
@@ -162,6 +187,25 @@ const {
             font-weight: bold;
             margin-left: 12px;
           }
+
+          .add-customer {
+            margin-left: 8px;
+
+            .add-btn {
+              height: 24px;
+              padding: 0 10px;
+              border-color: #d2d2d2;
+              color: $primary-color;
+              background: transparent;
+              font-size: $font-size-7;
+            }
+
+            :deep(.add-btn .van-icon) {
+              font-size: 10px;
+              margin-right: 4px;
+            }
+          }
+
         }
 
         .status {
@@ -199,6 +243,7 @@ const {
             white-space: nowrap;
             text-overflow: ellipsis;
           }
+
         }
 
 
@@ -216,22 +261,19 @@ const {
             @include flex-center;
             align-items: center;
             color: white;
-            padding: 5px;
+            height: 30px;
+            width: 30px;
             flex-shrink: 0;
             border-radius: 50%;
             background-color: $primary-color;
+            border: 1px solid #eaeaea;
 
             .van-icon {
-              font-size: $font-size-2;
+              font-weight: bold;
+              transform: rotate(270deg);
+              font-size: 18px;
             }
           }
-
-
-          .dialed {
-            background-color: #f1f1f1;
-            color: $sub-text-color;
-          }
-
         }
 
 
@@ -255,7 +297,7 @@ const {
             color: $primary-color;
 
             .van-icon {
-              font-size: $font-size-1;
+              font-size: 21px;
             }
           }
 
@@ -291,10 +333,10 @@ const {
   }
 }
 
-
 .skeleton {
-  padding: 30px 5px;
-  --van-skeleton-paragraph-background: #e3e3e3;
+  @include flex-center;
+  align-items: center;
+  height: 80%;
 }
 
 :deep(.bottom-button) {
@@ -302,6 +344,20 @@ const {
   background-color: rgba($primary-color, 0.1);
   color: $primary-color;
   border: 1px $primary-color solid;
+}
+
+.fab-keypad {
+  position: fixed;
+  right: 18px;
+  bottom: 86px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: $primary-color;
+  color: #fff;
+  border: 1px solid #eaeaea;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  @include flex-center;
 }
 
 </style>

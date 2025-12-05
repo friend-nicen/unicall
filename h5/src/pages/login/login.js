@@ -4,6 +4,7 @@ import {router} from "@/router";
 import config from "@/config";
 import {useLocalStorage} from "@vueuse/core";
 import _user from "@/stores/user";
+import sys from "@/stores/sys";
 
 /**
  * 封装登录相关的方法
@@ -47,10 +48,13 @@ export default function () {
 
             /* 保存用户状态 */
             user.save(res.data.user);
+            sys.fields = res.data.sys.fields;
+
             /* 跳转首页 */
             router.replace(config.index);
+
         } else {
-            load.toast(res.errMsg)
+            load.toast(res.data.errMsg)
         }
 
         load.loaded();

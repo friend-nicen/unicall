@@ -30,8 +30,7 @@ const basic = [
         path: "/browser",
         meta: {
             role: false,
-            name: "浏览器",
-            cache_1: 'browser'
+            name: "浏览器"
         },
         component: browser
     },

@@ -15,6 +15,9 @@ declare module "@vue/runtime-core" {
                 name: string | null;
                 id: number | null;
             };
+            corp: {
+                id: number | null;
+            };
             cookie: {
                 qcc: string;
             };

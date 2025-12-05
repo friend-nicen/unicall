@@ -1,11 +1,13 @@
 import quit________system from "@/service/quit-system";
-import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import {useWebSocket} from "@vueuse/core";
 import {watch} from "vue";
 import api from "@/service/api";
 import _user from "@/stores/user";
 import wsStore from "@/stores/ws";
+import {moveTop} from "@/plus/common";
 import load from "@/common/load";
+import call from "@/utils/call";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 
 /* 创建并连接 WebSocket，同时同步状态到 wsStore */
@@ -51,13 +53,15 @@ export function connectWs() {
             if (event.data === "1") return;
             const data = JSON.parse(event.data);
 
+            /* 处理，后台应用弹出 */
+            moveTop();
+
             /* 登录同一个账号，退出登录 */
             if (data.type === "quit" && data.finger !== user.finger) {
                 quit________system(false);
                 return load.info('您的账号在别处登录');
             } else if (data.type === "call") {
-                /* 封装打电话的逻辑 */
-                /*call({phone: data.phone});*/
+                call({phone: data.phone});
             }
 
         },

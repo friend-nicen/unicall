@@ -53,7 +53,7 @@
       </div>
       <div class="main">
         <template v-for="i of app" :key="i.title">
-          <div class="app" @click="$router.push(`/browser?url=${i.url}&title=${i.title}`)">
+          <div class="app" @click="open(i)">
             <div class="logo">
               <img :alt="i.title" :src="i.icon"/>
             </div>
@@ -87,10 +87,14 @@ const {
   loaded,
   chart,
   minDate,
-  maxDate
+  maxDate,
+
 } = init()
 
-const app = initApp();
+const {
+  app,
+  open
+} = initApp();
 
 </script>
 

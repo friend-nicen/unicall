@@ -3,8 +3,8 @@
   <div :style="{height:height}" class="container">
     <div class="header">
       <v-place/>
-      <van-nav-bar left-arrow
-                   @click-left="close" :title="$route.query.title"/>
+      <van-nav-bar :title="$route.query.title"
+                   left-arrow @click-left="close"/>
     </div>
   </div>
 </template>
@@ -12,28 +12,26 @@
 <script setup>
 /* eslint-disable */
 import sys from "@/stores/sys";
-import {onMounted} from "vue";
+import {onBeforeUnmount, onMounted} from "vue";
 import {useRoute, useRouter} from "vue-router";
-import load from "@/common/load";
+import init____back from '@/common/back';
 
 const height = sys.height + "px";
 const router = useRouter();
 const route = useRoute();
 let wv;
 
+/* 回退 */
+init____back();
+
 /* 关闭 */
 const close = () => {
   if (wv) {
     wv.close();
-  } else {
-    load.toast('组件异常..');
   }
 }
 /* 状态栏高度 */
 const statusHeight = plus.navigator.getStatusbarHeight() + 35;
-
-/*显示加载效果*/
-plus.nativeUI.showWaiting("加载中...");
 
 /* 打开指定链接 */
 const openWebview = async () => {
@@ -44,32 +42,24 @@ const openWebview = async () => {
 
   /* 加载企查查功能页面 */
   wv = plus.webview.open(route.query.url, '8848', {
+    plusrequire: "none",
     popGesture: 'close',
     scalable: true,
     top: statusHeight + 'px'
   });
 
+
+  /* 关联 */
+  plus.webview.currentWebview().append(wv);
+
   /* 显示窗口 */
   wv.show();
 
+  /*显示加载效果*/
+  plus.nativeUI.showWaiting("加载中...");
+
   /*窗口加载完成，监听事件*/
   wv.addEventListener('loaded', () => {
-    /* 注入JavaScript代码 */
-    const injectedJs = `window.initialize = () => {
-                    plus.key.addEventListener("backbutton", function () {
-                            history.back();
-                       });
-          }
-
-
-				 /*如果plus未初始化，择监听plusready事件*/
-					if (typeof plus == "undefined") {
-						document.addEventListener("plusready", window.initialize);
-					} else {
-						window.initialize();
-					}
-				`;
-    wv.evalJS(injectedJs);
     plus.nativeUI.closeWaiting();
   });
 
@@ -81,6 +71,7 @@ const openWebview = async () => {
 
 /* 初始化 */
 onMounted(() => openWebview());
+onBeforeUnmount(close);
 </script>
 
 <style lang="scss" scoped>

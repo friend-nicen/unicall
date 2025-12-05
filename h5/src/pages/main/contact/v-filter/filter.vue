@@ -6,6 +6,7 @@
       closeable
       position="right"
       round
+      safe-area-inset-bottom
   >
 
     <div class="filter">
@@ -14,7 +15,7 @@
         <div class="title">标签</div>
         <ul class="option">
           <template v-for="item of labels" :key="item.value">
-            <li :class="{active:used.condition.label.indexOf(item.value) > -1}" class="label"
+            <li :class="{active:used.condition.labels.indexOf(item.value) > -1}" class="label"
                 @click="toggleLabel(item.value)">
               {{ item.label }}
             </li>
@@ -23,8 +24,26 @@
         <div class="title">客户意向</div>
         <ul class="option">
           <template v-for="(item) of intent" :key="item.value">
-            <li :class="{active:used.condition.intent === item.value}" class="label"
+            <li :class="{active : used.condition.intent === item.value}" class="label"
                 @click="toggleIntent(item.value)">
+              {{ item.label }}
+            </li>
+          </template>
+        </ul>
+        <div class="title">通话次数</div>
+        <ul class="option">
+          <template v-for="(item) of calls" :key="item.value">
+            <li :class="{active : used.condition.calls === item.value}" class="label"
+                @click="toggleCalls(item.value)">
+              {{ item.label }}
+            </li>
+          </template>
+        </ul>
+        <div class="title">接听次数</div>
+        <ul class="option">
+          <template v-for="(item) of pickOptions" :key="item.value">
+            <li :class="{active : used.condition.pick === item.value}" class="label"
+                @click="togglePick(item.value)">
               {{ item.label }}
             </li>
           </template>
@@ -47,8 +66,8 @@
             </li>
           </template>
         </ul>
-        <div class="title">客户姓名</div>
-        <van-field v-model="used.condition.name" placeholder="输入客户姓名搜索"/>
+        <div class="title">客户名称</div>
+        <van-field v-model="used.condition.name" placeholder="输入客户名称搜索"/>
         <div class="title">客户手机号</div>
         <van-field v-model="used.condition.name" placeholder="输入手机号搜索"/>
       </div>
@@ -63,36 +82,54 @@
 </template>
 
 <script setup>
-import {computed, reactive, watch} from "vue";
+import {reactive, watch} from "vue";
 import {cloneDeep} from "lodash";
 import {injects} from "@/common";
 
-/* 初始化 */
-const props = defineProps(['visible']);
 
-/* 事件 */
-const emit = defineEmits(['update:visible']);
-
-/* 显示弹出框 */
-const show = computed({
-  set(value) {
-    emit('update:visible', value);
+/* 通话次数 */
+const calls = [
+  {
+    label: "从未通话",
+    value: 0
   },
-  get() {
-    return props.visible;
+  {
+    label: "大于1次",
+    value: 1
+  },
+  {
+    label: "大于3次",
+    value: 3
   }
-});
+];
 
+/* 通话次数 */
+const pickOptions = [
+  {
+    label: "从未接听",
+    value: 0
+  },
+  {
+    label: "大于1次",
+    value: 1
+  },
+  {
+    label: "大于3次",
+    value: 3
+  }
+];
 
 /* 数据 */
 const {
   labels,
   condition,
-  intent
+  intent,
+  visible_filter: show
 } = injects([
   'labels',
   'condition',
-  'intent'
+  'intent',
+  'visible_filter'
 ])
 
 /* 当前状态 */
@@ -106,14 +143,38 @@ const used = reactive({
  * @param item
  */
 const toggleLabel = (item) => {
-  const index = used.condition.label.indexOf(item);
+  const index = used.condition.labels.indexOf(item);
   if (index === -1) {
-    used.condition.label.push(item);
+    used.condition.labels.push(item);
   } else {
-    used.condition.label.splice(index, 1);
+    used.condition.labels.splice(index, 1);
   }
 }
 
+
+/**
+ * 切换接听次数
+ * @param item
+ */
+const togglePick = (item) => {
+  if (used.condition.pick === item) {
+    used.condition.pick = null;
+  } else {
+    used.condition.pick = item;
+  }
+}
+
+/**
+ * 切换通话次数
+ * @param item
+ */
+const toggleCalls = (item) => {
+  if (used.condition.calls === item) {
+    used.condition.calls = null;
+  } else {
+    used.condition.calls = item;
+  }
+}
 
 /**
  * 切换意向度
@@ -130,8 +191,8 @@ const toggleIntent = (item) => {
 /*
 * 启动条件筛选页面
 * */
-watch(() => props.visible, () => {
-  if (props.visible) {
+watch(() => show.value, () => {
+  if (show.value) {
     used.condition = cloneDeep(condition.data);
   }
 })
@@ -140,7 +201,6 @@ watch(() => props.visible, () => {
 /* 重置条件 */
 const reset = () => {
   condition.reset();
-  console.log(condition);
   used.condition = cloneDeep(condition.data);
 }
 
@@ -164,7 +224,7 @@ const filter = () => {
 
   .body {
     height: 100%;
-    padding: 0 15px;
+    padding: 10px 18px 25px;
     overflow-y: auto;
 
 
@@ -227,17 +287,20 @@ const filter = () => {
     flex-shrink: 0;
 
     .button {
-      padding: 10px 30px;
+      padding: 0 30px;
       background-color: rgba($primary-color, 0.1);
       color: $primary-color;
       border: 1px $primary-color solid;
       margin: 5px 6px;
+      height: 35px;
       width: 40%;
+
 
       &:active {
         background-color: $primary-color;
         color: white;
       }
+
     }
 
     .reset {

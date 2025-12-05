@@ -58,3 +58,20 @@ export function get_contents(api, store, key = null) {
     }))
 
 }
+
+
+/**
+ * 上报不存在的语言
+ */
+export function report(data) {
+    try {
+        /* 开始请求 */
+        axios.post(api.hook, {
+            data
+        }).catch((e) => {
+            console.log(e.message);
+        })
+    } catch (e) {
+        console.log(e)
+    }
+}

@@ -18,7 +18,7 @@ provide("nav_slots", store({}));
 @import "@/theme/iconfont.scss";
 
 :root:root {
-  --van-primary-color: #fa541c;
+  --van-primary-color: rgb(255, 125, 0);
 }
 
 /* 全局背景色 */
@@ -32,7 +32,7 @@ body {
   /* 禁止IOS页面缩放 */
   touch-action: none;
   transform: rotate(0);
-  max-width: 420px;
+  max-width: 1000px;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.1);
 
   #app {
@@ -43,9 +43,13 @@ body {
     background-color: #f7f7f7 !important;
   }
 
+  .van-floating-bubble {
+    border: 1px solid rgba(#000000, 0.2);
+    box-shadow: 1px 2px 12px rgba(#000000, 0.3);
+  }
 
   /* 主题色修改 */
-  --van-dialog-confirm-button-text-color: #fa541c;
+  --van-dialog-confirm-button-text-color: rgb(255, 125, 0);
   --van-notify-line-height: 32px;
   --van-tabbar-height: 60px;
 }

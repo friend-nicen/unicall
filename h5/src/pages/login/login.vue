@@ -88,6 +88,7 @@ const {login, mobile, password} = init();
         padding-left: 50px;
         padding-right: 40px;
         border-radius: 30px;
+        font-size: 14px;
         background-color: rgb(232, 240, 254);
         color: #606266;
         /* 占位符样式 */
@@ -106,6 +107,7 @@ const {login, mobile, password} = init();
         height: 50px;
         margin-top: 20px;
         border: none;
+        font-size: 14px;
         background-image: linear-gradient(to right, #55bafe, #3072ff);
         box-shadow: 0 1px 15px 1px rgba(95, 79, 79, 0.26);
       }

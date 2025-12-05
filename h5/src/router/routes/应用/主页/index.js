@@ -11,6 +11,16 @@ export default function (obj = {}) {
             component: () => import('@/pages/main/contact')
         },
         {
+            path: 'task',
+            meta: Object.assign({
+                role: false,
+                icon: 'notes-o',
+                name: "任务",
+                cache_2: 'task'
+            }, obj),
+            component: () => import('@/pages/main/task')
+        },
+        {
             path: 'dial',
             meta: Object.assign({
                 role: false,
@@ -25,20 +35,10 @@ export default function (obj = {}) {
             meta: Object.assign({
                 role: false,
                 icon: 'bar-chart-o',
-                name: "统计",
+                name: "工作台",
                 cache_2: 'chart'
             }, obj),
             component: () => import('@/pages/main/chart')
         },
-        {
-            path: 'user',
-            meta: Object.assign({
-                role: false,
-                icon: "manager-o",
-                name: "我的",
-                cache_2: 'user'
-            }, obj),
-            component: () => import('@/pages/main/user')
-        }
     ]
 }

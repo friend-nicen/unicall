@@ -6,6 +6,7 @@
       closeable
       destroy-on-close
       position="bottom"
+      safe-area-inset-bottom
       round
       teleport="body"
       @closed="customer = null">
@@ -106,10 +107,6 @@ const toggleLabel = (item) => {
 * 修改标签
 * */
 const modify = () => {
-
-  /* 显示加载效果 */
-  load.loading("加载中...");
-
   try {
     /* 开始请求 */
     axios.post(api.label.modify, {
@@ -123,7 +120,7 @@ const modify = () => {
         load.toast("修改成功");
       } else {
         /* 弹出错误原因 */
-        load.toast(res.errMsg);
+        load.toast(res.data.errMsg);
       }
     }).catch((e) => {
       /* 弹出错误原因 */
@@ -203,6 +200,13 @@ watch(() => customer.value, () => {
     border: 1px $primary-color solid;
     margin: 20px 20% 15px;
     width: 60%;
+
+    &:active {
+      background-color: $primary-color;
+      color: white;
+    }
+
+
   }
 
 }

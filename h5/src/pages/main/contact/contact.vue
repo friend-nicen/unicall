@@ -6,119 +6,125 @@
     <v-condition/>
 
     <!-- 客户列表数据 -->
-    <div v-if="data.length > 0" class="customer-list">
-      <template v-for="(item) of data" :key="item.id">
-        <div class="customer-card" @click="showDetail(item)">
+    <van-pull-refresh v-model="refreshing" :animation-duration="300" @refresh="refresh">
+      <template v-if="data.length > 0">
+        <van-list
+            v-model:loading="loading"
+            :finished="finish"
+            class="customer-list"
+            finished-text="没有更多了"
+            @load="loadData"
+        >
+          <template v-for="(item) of data" :key="item.id">
+            <div class="customer-card" @click="showDetail(item)">
 
-          <!-- 客户基本信息区域 -->
-          <div class="customer-header">
-            <div class="customer-info">
-              <div class="avatar-wrapper">
-                <img :src="`${$api.avatar}${item.name}`" alt="头像" class="customer-avatar">
+              <!-- 客户基本信息区域 -->
+              <div class="customer-header">
+                <div class="customer-info">
+                  <div class="avatar-wrapper">
+                    <img :src="`${$api.avatar}${item.name}`" alt="头像" class="customer-avatar">
+                  </div>
+                  <div class="basic-info">
+                    <div class="customer-name">{{ item.name }}</div>
+                    <div class="customer-phone">{{ !item.phone ? "暂无手机号" : item.phone }}</div>
+                  </div>
+                </div>
+                <v-tag :color="item.status"> {{ status[item.status] || '未知状态' }}</v-tag>
               </div>
-              <div class="basic-info">
-                <div class="customer-name">{{ item.name }}</div>
-                <div class="customer-phone">{{ !item.phone ? "暂无手机号" : item.phone }}</div>
+
+              <!-- 客户详细信息区域 -->
+              <div class="customer-details">
+                <div class="detail-item">
+                  <span class="detail-label">意向度</span>
+                  <span class="detail-value">{{ intent[item.intent]?.label || '未评估' }}</span>
+                </div>
+
+                <div v-if="item.remark" class="detail-item">
+                  <span class="detail-label">备注</span>
+                  <span class="detail-value">{{ item.remark }}</span>
+                </div>
+
+                <div class="detail-item">
+                  <span class="detail-label">分配时间</span>
+                  <span class="detail-value">{{ item.assign_time ? item.assign_time : '未分配' }}</span>
+                </div>
+
+                <div class="detail-item">
+                  <span class="detail-label">上次通话</span>
+                  <span class="detail-value">{{ item.last_call ? item.last_call : '无记录' }}</span>
+                </div>
+
+              </div>
+
+              <!-- 操作按钮区域 -->
+              <div class="action">
+                <div class="customer-actions">
+
+                  <div class="action-btn tag-btn" @click.stop="showLabel(item)">
+                    <van-icon class="action-icon" name="label-o"/>
+                    <span class="action-text">标签</span>
+                  </div>
+                  <div class="action-btn message-btn" @click.stop="showFollow(item)">
+                    <van-icon class="action-icon" name="guide-o"/>
+                    <span class="action-text">跟进</span>
+                  </div>
+                  <div class="action-btn wechat-btn" @click.stop="showDetail(item)">
+                    <van-icon class="action-icon" name="records-o"/>
+                    <span class="action-text">修改</span>
+                  </div>
+                </div>
+                <div class="call-btn" @click.stop="call(item)">
+                  <div :class="{called : item.calls > 0}" class="call">
+                    <van-icon name="phone-o"/>
+                  </div>
+                </div>
               </div>
             </div>
-            <v-tag :color="item.status"> {{ status[item.status] || '未知状态' }}</v-tag>
-          </div>
-
-          <!-- 客户详细信息区域 -->
-          <div class="customer-details">
-            <div class="detail-item">
-              <span class="detail-label">意向度</span>
-              <span class="detail-value">{{ intent[item.intent].label || '未评估' }}</span>
-            </div>
-
-            <div v-if="item.remark" class="detail-item">
-              <span class="detail-label">备注</span>
-              <span class="detail-value">{{ item.remark }}</span>
-            </div>
-
-            <div class="detail-item">
-              <span class="detail-label">上次通话</span>
-              <span class="detail-value">{{ item.last_call ? item.last_call : '无记录' }}</span>
-            </div>
-
-            <div class="detail-item">
-              <span class="detail-label">分配时间</span>
-              <span class="detail-value">{{ item.assign_time ? item.assign_time : '未分配' }}</span>
-            </div>
-
-
-          </div>
-
-          <!-- 操作按钮区域 -->
-          <div class="customer-actions">
-
-            <div class="action-btn message-btn" @click.stop="sendMessage(item.phone)">
-              <van-icon class="action-icon" name="chat-o"/>
-              <span class="action-text">短信</span>
-            </div>
-            <div class="action-btn tag-btn" @click.stop="showLabel(item)">
-              <van-icon class="action-icon" name="label-o"/>
-              <span class="action-text">标签</span>
-            </div>
-            <div class="action-btn wechat-btn" @click.stop="showEdit(item)">
-              <van-icon class="action-icon" name="records-o"/>
-              <span class="action-text">修改</span>
-            </div>
-            <div :class="{called: item.dial > 0}" class="action-btn call-btn" @click.stop="call(item)">
-              <van-icon class="action-icon" name="phone-o"/>
-              <span class="action-text">拨打</span>
-            </div>
-          </div>
-        </div>
+          </template>
+        </van-list>
       </template>
-      <!--   加载状态   -->
-      <v-load/>
-    </div>
-
-    <van-empty v-else description="暂无数据">
-      <van-button class="bottom-button" plain round size="small" type="primary" @click.stop="loadData">重新加载
-      </van-button>
-    </van-empty>
+      <template v-else>
+        <van-empty description="暂无数据">
+          <van-button class="bottom-button" plain round size="small" type="primary" @click.stop="refresh">重新加载
+          </van-button>
+        </van-empty>
+      </template>
+    </van-pull-refresh>
   </div>
 
   <div v-else class="skeleton">
-    <van-skeleton :row="20" title/>
+    <van-loading size="24px"></van-loading>
   </div>
 
   <!-- 标签选择 -->
   <v-label/>
 
   <!-- 客户详细信息 -->
-  <v-detail/>
+  <v-detail ref="detailRef"/>
 
-  <!-- 客户编辑 -->
-  <v-edit/>
+  <!-- 客户跟进 -->
+  <v-follow/>
+
 
   <!-- 条件过滤 -->
-  <v-filter v-model:visible="visible_filter"/>
+  <v-filter/>
+
 
 </template>
 
 <script setup>
 
 import init from './contact'
-import init_comuni from './comunicate';
+import init_height from './height';
 import init_label from './label';
 import init_detail from './detail';
 import init_data from "./data";
-import init_Edit from "./edit";
+import init_follow from "./follow";
 import VCondition from "./v-condition";
 import VLabel from "./v-label";
 import VDetail from "./v-detail";
-import VLoad from "./v-load";
+import VFollow from './v-follow';
 import VFilter from "./v-filter";
-import VEdit from "./v-edit";
-
-
-const {
-  call,
-  sendMessage
-} = init_comuni();
 
 
 const {
@@ -134,30 +140,39 @@ const {
   loaded,
   loadData,
   data,
-  visible_filter
+  refreshing,
+  refresh,
+  loading,
+  finish,
+  call
 } = init();
 
 
 const {
-  showDetail
+  showDetail,
+  detailRef
 } = init_detail();
 
+const height = init_height();
+
+/* 跟进记录添加 */
 const {
-  showEdit
-} = init_Edit();
+  showFollow
+} = init_follow();
+
 </script>
 
 <style lang="scss" scoped>
 
 /* MIUI风格的客户列表面板 */
 .panel {
-  background-color: #f8f9fa;
   /* 限制fixed */
   transform: scale(1.0);
 
   /* 客户列表容器 */
   .customer-list {
-    padding: 8px 10px 16px;
+    padding: 12px 10px 16px;
+    min-height: v-bind(height);
 
     /* 客户卡片 */
     .customer-card {
@@ -178,14 +193,18 @@ const {
         .customer-info {
           display: flex;
           align-items: center;
-          flex: 1;
+          width: 100%;
+          overflow: hidden;
 
           .avatar-wrapper {
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
             margin-right: 12px;
 
             .customer-avatar {
-              width: 44px;
-              height: 44px;
+              width: 100%;
+              height: 100%;
               border-radius: 50%;
               background-color: #f0f0f0;
               object-fit: cover;
@@ -193,14 +212,20 @@ const {
           }
 
           .basic-info {
-            flex: 1;
+
+            width: 100%;
+            overflow: hidden;
 
             .customer-name {
               font-size: 16px;
               font-weight: 600;
               color: #1a1a1a;
               margin-bottom: 4px;
-              line-height: 1.3;
+              width: 95%;
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+
             }
 
             .customer-phone {
@@ -215,7 +240,7 @@ const {
 
       /* 客户详细信息区域 */
       .customer-details {
-        margin-bottom: 16px;
+        margin: 15px 0 10px;
         padding: 0 5px;
 
         .detail-item {
@@ -255,31 +280,73 @@ const {
         }
       }
 
-      /* 操作按钮区域 */
-      .customer-actions {
+      .action {
         display: flex;
-        gap: 8px;
+        justify-content: space-between;
 
-        .action-btn {
-          flex: 1;
+        gap: 16px;
+        /* 操作按钮区域 */
+        .customer-actions {
           display: flex;
           align-items: center;
-          justify-content: center;
-          padding: 7px 8px;
-          border-radius: 8px;
-          background-color: #f8f9fa;
-          border: 1px solid #e9ecef;
-          gap: 6px;
-          cursor: pointer;
+          justify-content: flex-start;
+          width: 100%;
+          overflow: auto;
+          @include scroll-bar();
+          gap: 12px;
 
-          .action-icon {
-            font-size: 14px;
+          .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 15px;
+            border-radius: 8px;
+            height: fit-content;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            white-space: nowrap;
+            width: fit-content;
+            gap: 6px;
+            cursor: pointer;
+
+            .action-icon {
+              font-size: 14px;
+            }
+
+            .action-text {
+              font-size: 11px;
+              font-weight: 500;
+              line-height: 1;
+            }
+
+          }
+        }
+
+        .call-btn {
+          @include flex-center;
+          justify-content: flex-end;
+          margin: 0 5px 0 15px;
+
+          .call {
+            @include flex-center;
+            align-items: center;
+            border: 1px solid #eaeaea;
+            border-radius: 50%;
+            color: white;
+            height: 35px;
+            width: 35px;
+            background-color: $primary-color;
+
+            .van-icon {
+              font-weight: bold;
+              transform: rotate(270deg);
+              font-size: 18px;
+            }
           }
 
-          .action-text {
-            font-size: 11px;
-            font-weight: 500;
-            line-height: 1;
+          .called {
+            background-color: #f1f1f1;
+            color: $sub-text-color;
           }
 
         }
@@ -290,8 +357,9 @@ const {
 
 
 .skeleton {
-  padding: 30px 5px;
-  --van-skeleton-paragraph-background: #e3e3e3;
+  @include flex-center;
+  align-items: center;
+  height: 80%;
 }
 
 :deep(.bottom-button) {

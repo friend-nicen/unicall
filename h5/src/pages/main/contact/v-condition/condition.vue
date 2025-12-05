@@ -2,10 +2,13 @@
 
   <div class="tabbar">
     <van-tabs v-model:active="condition.data.status" :color="$theme['primary-color']" class="tab-top" shrink>
-      <van-tab :name="-1" title="全部"></van-tab>
-      <template v-for="(i,k) of status" :key="k">
-        <van-tab :name="k" :title="i"/>
+      <template v-if="summary.data">
+        <van-tab :name="-1" :title="`全部(${summary.data[-1]})`"></van-tab>
+        <template v-for="(i,k) of status" :key="k">
+          <van-tab :name="k" :title="`${i}(${summary.data[k]})`"/>
+        </template>
       </template>
+
     </van-tabs>
     <div class="filter" @click="visible_filter = true">
       <van-icon name="filter-o"/>
@@ -20,13 +23,15 @@ import {injects} from "@/common";
 
 
 /* 条件 */
-const {
+let {
   condition,
   visible_filter,
-  status
+  status,
+  summary
 } = injects([
   'condition',
   'status',
+  'summary',
   'visible_filter'
 ]);
 
@@ -44,11 +49,9 @@ const {
   justify-content: space-between;
   background-color: white;
   border-bottom: solid $border-color 1px;
+  z-index: 9999;
 
   .filter {
-    position: absolute;
-    right: 0;
-    top: 0;
     flex-shrink: 0;
     height: 100%;
     background-color: white;
@@ -62,7 +65,7 @@ const {
     }
 
     .van-icon {
-      font-size: 20px;
+      font-size: 22.5px;
       padding: 0 18px 0 15px;
       color: $text-color;
     }

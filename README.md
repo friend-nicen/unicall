@@ -18,6 +18,8 @@ V2版本（同下方演示图一致）不再通过html5plus来读取和操作录
 
 > 项目内包含前端以及APP的完整代码，无后端代码。可自行编译项目代码，然后使用下方演示接口和账号来测试运行。（Web环境无法调用APP功能，体验具体功能请自行编译APP）
 
+![外呼APP](./demo/app.png "外呼APP")
+
 ## v1版
 
 旧版代码地址：<https://github.com/friend-nicen/unicall/tree/4c3b3c43402437d70acbdf517cee8339514cbd5e>
@@ -35,8 +37,6 @@ V2版本（同下方演示图一致）不再通过html5plus来读取和操作录
 * 测试账号：ali 123456
 
 > 如有需要请加wx good7341
-
-![外呼APP](./demo/app.png "外呼APP")
 
 ## 快速开始
 

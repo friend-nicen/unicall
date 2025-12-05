@@ -4,7 +4,8 @@
 * 加载全局路由守卫
 * */
 
-import {init_plus, init_sys, load_user} from "@/utils/initialize";
+import {init_plus, init_sys} from "@/utils/initialize";
+import loadSys from '@/service/load-sys';
 import setting from "@/stores/setting";
 import {router} from "@/router";
 import _user from "@/stores/user";
@@ -40,7 +41,7 @@ export default function () {
         /* 系统尚未初始化 */
         if (!sys.sys_ready) {
             console.log("初始化用户信息...");
-            await load_user();//加载用户信息初始化系统
+            await loadSys();//加载用户信息初始化系统
         }
         next();
     });
@@ -72,7 +73,6 @@ export default function () {
     router.beforeEach((to, from, next) => {
 
         console.log("登录判断守卫激活....")
-
 
         /* 判断是否需要拦截 */
         if (ignoreRoute.includes(to)) {

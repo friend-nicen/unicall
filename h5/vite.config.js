@@ -5,6 +5,7 @@ import Components from 'unplugin-vue-components/vite';
 import {VantResolver} from 'unplugin-vue-components/resolvers';
 import vueSetupExtend from 'vite-plugin-vue-setup-extend'
 import viteCompression from 'vite-plugin-compression';
+import postcssPxtorem from "postcss-pxtorem";
 import autoprefixer from 'autoprefixer'
 import eslint from 'vite-plugin-eslint'
 import legacy from '@vitejs/plugin-legacy';
@@ -53,8 +54,8 @@ export default defineConfig({
         drop: !dev ? ['console', 'debugger'] : []
     },
     build: {
-        sourcemap: true,
-        minify: false,
+        sourcemap: false,
+        minify: true,
         cssTarget: "chrome61",
         outDir: "dist",
         rollupOptions: {
@@ -70,12 +71,19 @@ export default defineConfig({
             scss: {
                 additionalData: `  
                      @import "@/theme/theme.scss";
+                      @import "@/theme/scroll.scss";
                  `
             }
         },
         postcss: {
             plugins: [
-                autoprefixer()
+                autoprefixer(),
+                postcssPxtorem({
+                    rootValue: 4.12,
+                    propList: ['*'],
+                    unitPrecision: 5,
+                    selectorBlackList: ['body']
+                })
             ]
         }
     },
@@ -91,6 +99,11 @@ export default defineConfig({
                 changeOrigin: true,
                 secure: false,
                 rewrite: (path) => path.replace(/^\/api/, ''),
+            },
+            '/audio': {
+                target: 'https://call.nicen.cn',
+                changeOrigin: true,
+                secure: false
             },
         }
     },

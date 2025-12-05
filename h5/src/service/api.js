@@ -8,14 +8,21 @@
 const BASE_URL = import.meta.env.PROD ? "" : "/api";
 
 export default {
-    host: BASE_URL,//全局host
+    host: "",//全局host
+    ws: `wss://call.nicen.cn/ws`,
     avatar: `${BASE_URL}/avatar?text=`,
+    event: `${BASE_URL}/event_v2`,
+    /* 上报 */
+    hook: `${BASE_URL}/api/hook/report`,
+    /* 上报 */
+    update: `${BASE_URL}/dial/v4/update`,
+
     /* 用户登录 */
     login: `${BASE_URL}/auth/index/login`,
-    ws: `wss://call.nicen.cn/ws`,
     /* 通话 */
     dial: {
-        add: `${BASE_URL}/dial/v2/add`,
+        create: `${BASE_URL}/dial/v6/create`,
+        save: `${BASE_URL}/dial/v3/add`,
         upload: `https://call.nicen.cn/dial/v3/upload`,
     },
     /* 加载客户列表 */
@@ -35,6 +42,12 @@ export default {
         lists: `${BASE_URL}/dial/v2/label`,
         /* 加载标签 */
         modify: `${BASE_URL}/dial/v2/alter`,
+    },
+    detail: {
+        follows: `${BASE_URL}/dial/v5/follows`,
+        follow: `${BASE_URL}/dial/v5/follow`,
+        calls: `${BASE_URL}/dial/v5/calls`,
+        logs: `${BASE_URL}/dial/v5/logs`,
     },
     /* 数据 */
     data: {

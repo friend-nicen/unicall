@@ -3,10 +3,10 @@
 }
 
 
-$primary-color: #fa541c;
-$primary-color: #fa541c;
+$primary-color: rgb(255, 125, 0);
+$primary-color: rgb(255, 125, 0);
 $primary-color-2: #165dff;
-$active-color: rgba(#fa541c, 0.5);
+$active-color: rgba($primary-color, 0.5);
 
 
 $bg-color-1: #f5f5f5;

@@ -9,17 +9,25 @@
 
 import loadGuard from "@/router/load-guard"
 import loadInterceptor from "@/service/interceptor"
+import watchRem from "./watchRem";
+
 
 export default async function () {
 
-    /*
-    * 加载拦截器
-    * */
+
+    /**
+     * 跟随屏幕大小自动调整rem
+     * */
+    watchRem();
+
+    /**
+     * 加载拦截器
+     * */
     loadInterceptor();
 
-    /*
-    * 加载路由守卫
-    * */
+    /**
+     * 加载路由守卫
+     * */
     loadGuard();
 
 }

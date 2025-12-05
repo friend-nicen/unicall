@@ -10,5 +10,6 @@ export default {
     height: window.innerHeight, //初始化高度
     debug: true, //是否开启调试模式
     network: true, //是否检测网络
-    overlay: false //是否检测后台弹出权限
+    overlay: false, //是否检测后台弹出权限
+    fields: []
 };

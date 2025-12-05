@@ -5,5 +5,5 @@
 * */
 
 export default {
-    "primary-color": '#fa541c'
+    "primary-color": 'rgb(255, 125, 0)'
 }

@@ -16,12 +16,22 @@
     </div>
 
     <van-tabbar :active-color="$theme['primary-color']" :fixed="false" :safe-area-inset-bottom="true" route>
-      <template v-for="i of routes" :key="i.path">
+
+      <template v-for="(i,k) of routes" :key="i.path">
+        <van-tabbar-item class="icon-button" v-if="k === 2">
+          <div class="fab-keypad" @click="showKeypad = true">
+            <span class="icon icon-bohaopan bohao"></span>
+          </div>
+        </van-tabbar-item>
         <van-tabbar-item :icon="i.meta.icon" :name="i.path" :to="i.path" replace>{{ i.meta.name }}</van-tabbar-item>
       </template>
     </van-tabbar>
 
   </div>
+
+
+  <!-- 拨号 -->
+  <v-keypad v-model:show="showKeypad"/>
 
 </template>
 
@@ -36,13 +46,15 @@
 * */
 
 import {getChildren} from "@/router/common";
-import {computed, provide, ref} from "vue";
+import {computed, ref} from "vue";
 import {useRouter} from 'vue-router';
+import {provides} from "@/common";
 
 console.log("Tab框架初始化...");
 
 /*路由对象*/
 const router = useRouter();
+const showKeypad = ref(false);
 
 /* 显示哪个路由下面的菜单 */
 const props = defineProps({
@@ -88,12 +100,18 @@ const routes = computed(() => {
 
 /* DOM注入 */
 const tabView = ref(null);
-provide("tabView", tabView);//依赖注入
+
+/* 依赖注入 */
+provides({
+  showKeypad,
+  tabView
+});
 
 </script>
 
 
 <style lang="scss" scoped>
+
 .tab-container {
   display: flex;
   flex-direction: column;
@@ -107,12 +125,14 @@ provide("tabView", tabView);//依赖注入
 
   :deep(.van-tabbar) {
     flex-shrink: 0;
-    border-top: none;
+    border: none;
     --van-tabbar-item-text-color: #444444;
+    box-shadow: 0 -3.5px 12px 0 hsla(0, 0%, 64%, .2);
 
-    .van-tabbar-item__text {
-      font-weight: bold;
+    &:after {
+      border: none;
     }
+
 
     .van-icon {
       &::before {
@@ -121,7 +141,7 @@ provide("tabView", tabView);//依赖注入
     }
 
     .van-tabbar-item {
-      color: $sub-text-color;
+      color: #444444;
 
       * {
         color: inherit;
@@ -130,4 +150,46 @@ provide("tabView", tabView);//依赖注入
 
   }
 }
+
+
+.icon-button {
+  position: relative;
+
+  &::before {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAI4AAAAtCAMAAABPq6N6AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAkUExURaqqqrOzs0xpcaioqKampvPz8+zs7Pz8/Pn5+d3d3f7+/v///zC/xUkAAAALdFJOUwoFACIVmXnWuVbsWW1REwAAAhdJREFUWMPtl8l2wyAMReUaA4b//996AiSBMZOTLvrSRTap77nCwIOfPxXo+/nEPl/DOR6//7H0UUEzSS7NTNACQwI+EdLrOJjFQQD70mMJ2kZEOBIJQO/ZiaazRWwfEHuOL1hUiyGoNeOsiBMiEQ8FyNA01g4Vc8+SIRqDE8xELHOcmKjqPYNaMxmUBBMGGoFDzVxi/HNXuWiljLHWGKX0IldKBBioRBCU7TTYjCPRG0Ucox0TNlQqCEpWDTJzPukGBSEFIhAVgqBg2QQzp5cly3IRLWtQhHjacaYkjFS2MEoGQx7owQ8UqfFzKocJQDWCoNTNMaYqmANoJYIeeaBw2ez/VduGaCLoaUHDoxs/J2ObYtzEsJ+pCgdtNl1qmKCwoGvtMJrV2I6YNeKZynGom2NQtjPRwGrs8GWz2O4sEc9UhJNYxANoAo/IvvBw/4IPpUn4SQmCx71vEA3zcyMI7u427owaRnPxzOzOMaVwyN0cqRlJg3gEaT8ICWirBHZ+D6WJeHBFPI1A3G+FH1TPVpzZoOfo3hoIeJdDl776A7z0iJ9p+4FE4edz6jwYsgdGuNvDbb0W5Go+flB0YDMviKxpu/503UGNfS1G3nZE2m59f1L21aiVA7nZxSyvwxAgigR+PC7yAzCoaDim6wJL27XU9oPRkrd7wH1b2Y9HoV6/4yx7tP4CCWLSeoOQW8D+qfzj5PILImCLlJBdwN8AAAAASUVORK5CYII=);
+    background-position: 50%;
+    background-repeat: no-repeat;
+    background-size: contain;
+    content: "";
+    height: 27px;
+    position: absolute;
+    top: -22px;
+    width: 60px;
+    z-index: 5;
+  }
+
+  .fab-keypad {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    margin-top: -36px;
+    background-color: $primary-color;
+    border: 1px solid #eaeaea;
+    @include flex-center;
+    position: relative;
+    z-index: 18;
+
+    .bohao {
+      color: #ffffff !important;
+      font-size: 16px;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+  }
+
+
+}
+
+
 </style>

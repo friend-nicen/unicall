@@ -1,5 +1,4 @@
-import {getChildrens} from '@/router/common'
-
+import {getChildrens} from '@/router/common';
 
 export default function (obj = {}) {
 
@@ -8,7 +7,7 @@ export default function (obj = {}) {
     return [
         {
             path: 'main',
-            redirect: "/main/dash",
+            redirect: "/main/contact",
             component: () => import('@/layouts/tab-layout.vue'),
             children: children.主页.default(obj)
         }

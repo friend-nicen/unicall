@@ -1,3 +1,3 @@
-import follow from "./follow.vue"
+import index from "./index.vue"
 
-export default follow;
+export default index;

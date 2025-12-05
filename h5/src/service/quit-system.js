@@ -16,6 +16,7 @@ const quitSystem = async () => {
     Object.keys(Cookies.get()).forEach((item) => {
         Cookies.remove(item);
     })
+
     /* 重置用户数据的状态管理器 */
     user().$reset();
 
