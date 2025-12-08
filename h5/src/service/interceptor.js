@@ -9,14 +9,10 @@ import api from '@/service/api';
 import quitSystem from './quit-system'
 import config from "@/config";
 import user from "@/stores/user";
+import Cookies from 'js-cookie';
 
-/* 是否需要注册认证头 */
-if (config.auth.mode === "token") {
-    const xsrfHeaderName = config.auth.token;
-    axios.defaults.timeout = 60000;
-    axios.defaults.xsrfHeaderName = xsrfHeaderName;
-    axios.defaults.xsrfCookieName = xsrfHeaderName;
-}
+/* 设置 */
+axios.defaults.timeout = 60000;
 
 /* 不需要拦截的接口 */
 const ignoreApi = {
@@ -43,6 +39,14 @@ export default function () {
     console.log("加载拦截器...");
 
     let timer = null; //计时器
+
+
+    /* 请求拦截 */
+    axios.interceptors.request.use(function (req) {
+        const token = Cookies.get(config.auth.token);
+        if (token) req.headers[config.auth.token] = token;
+        return req;
+    });
 
     axios.interceptors.response.use((res) => {
 
