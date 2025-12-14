@@ -62,5 +62,13 @@ export default {
     chart: {
         /* 列表 */
         day: `${BASE_URL}/dial/v4/day`,
+    },
+    /* 自动任务 */
+    task: {
+        add: `${BASE_URL}/dial/v7/add`,
+        filter: `${BASE_URL}/dial/v7/filter`,
+        lists: `${BASE_URL}/dial/v7/list`,
+        del: `${BASE_URL}/dial/v7/del`,
+        modify: `${BASE_URL}/dial/v7/modify`
     }
 }

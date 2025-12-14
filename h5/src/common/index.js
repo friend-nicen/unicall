@@ -371,3 +371,14 @@ export function objToQuery(obj) {
         .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
         .join('&');
 }
+
+/**
+ * 截取小数
+ * @param n
+ * @param digits
+ * @return {number}
+ */
+export function cut(n, digits = 2) {
+    const p = 10 ** digits;
+    return Math.trunc(n * p) / p;
+}
